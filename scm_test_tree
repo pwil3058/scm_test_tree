@@ -1,0 +1,143 @@
+#!/usr/bin/env python
+### Copyright (C) 2010 Peter Williams <peter_ono@users.sourceforge.net>
+###
+### This program is free software; you can redistribute it and/or modify
+### it under the terms of the GNU General Public License as published by
+### the Free Software Foundation; version 2 of the License only.
+###
+### This program is distributed in the hope that it will be useful,
+### but WITHOUT ANY WARRANTY; without even the implied warranty of
+### MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+### GNU General Public License for more details.
+###
+### You should have received a copy of the GNU General Public License
+### along with this program; if not, write to the Free Software
+### Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
+
+'''Command line interface for the darning patch management system'''
+
+import sys
+import argparse
+import collections
+import os
+import datetime
+
+import locale
+import gettext
+
+APP_NAME = "scm_test_tree"
+
+# find the locale directory
+# first look in the source directory (so that we can run uninstalled)
+LOCALE_DIR = os.path.join(sys.path[0], 'i10n')
+if not os.path.exists(LOCALE_DIR) or not os.path.isdir(LOCALE_DIR):
+    # if we get here it means we're installed and we assume that the
+    # locale files were installed under the same prefix as the
+    # application.
+    _TAILEND = os.path.join('share', 'locale')
+    _prefix = sys.path[0]
+    _last_prefix = None # needed to prevent possible infinite loop
+    while _prefix and _prefix != _last_prefix:
+        LOCALE_DIR = os.path.join(_prefix, _TAILEND)
+        if os.path.exists(LOCALE_DIR) and os.path.isdir(LOCALE_DIR):
+            break
+        _last_prefix = _prefix
+        _prefix = os.path.dirname(_prefix)
+    # As a last resort, try the usual place
+    if not (os.path.exists(LOCALE_DIR) and os.path.isdir(LOCALE_DIR)):
+        LOCALE_DIR = os.path.join(sys.prefix, 'share', 'locale')
+
+# Lets tell those details to gettext
+gettext.install(APP_NAME, localedir=LOCALE_DIR)
+
+PARSER = argparse.ArgumentParser(description=_('Provide a modifiable test file tree.'))
+
+PARSER.add_argument(
+    '--version',
+    action='version',
+    version="0.01"
+)
+
+SUB_CMD_PARSER = PARSER.add_subparsers(title=_('commands'))
+
+CREATE_PARSER = SUB_CMD_PARSER.add_parser(
+    'create',
+    description=_('Create a file tree suitable for testing "darning" functionality.'),
+)
+
+def create_cmd(args):
+    '''Execute the "create" sub command using the supplied args'''
+    for dindex in range(6):
+        if dindex:
+            dname = 'dir{0}/'.format(dindex)
+            os.mkdir(dname)
+        else:
+            dname = ''
+        for sdindex in range(6):
+            if sdindex:
+                if not dindex:
+                    continue
+                sdname = 'subdir{0}/'.format(sdindex)
+                os.mkdir(dname + sdname)
+            else:
+                sdname = ''
+            for findex in range(1, 6):
+                tfpath = dname + sdname + 'file{0}'.format(findex)
+                open(tfpath, 'w').write('{0}: is a text file.\n'.format(tfpath))
+                bfpath = dname + sdname + 'binary{0}'.format(findex)
+                open(bfpath, 'w').write('{0}:\000is a binary file.\n'.format(bfpath))
+                hfpath = dname + sdname + '.hidden{0}'.format(findex)
+                open(hfpath, 'w').write('{0}:is a hidden file.\n'.format(hfpath))
+    return 0
+
+CREATE_PARSER.set_defaults(run_cmd=create_cmd)
+
+MODIFY_PARSER = SUB_CMD_PARSER.add_parser(
+    'modify',
+    description=_('Modify the specified (or all if none specified) files.'),
+)
+
+MODIFY_PARSER.add_argument(
+    '--no_newline',
+    dest='opt_no_newline',
+    action='store_true',
+    help=_('suppress the newline at the end of the change(s).'),
+)
+
+MODIFY_PARSER.add_argument(
+    '--add_tws',
+    dest='opt_add_tws',
+    action='store_true',
+    help=_('add trailing whitespace at the beginning of the change(s).'),
+)
+
+MODIFY_PARSER.add_argument(
+    'filepaths',
+    metavar=_('file'),
+    nargs='*',
+    help=_('the name(s) of the file(s) are to be modified.'),
+)
+
+def modify_cmd(args):
+    '''Execute the "modify" sub command using the supplied args'''
+    template = 'tws \ntws\t\n' if args.opt_add_tws else ''
+    template += 'Path: "{{0}}" modified at: {0}'.format(datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S.%f"))
+    template += '' if args.opt_no_newline else '\n'
+    if not args.filepaths:
+        pass # TODO: generate list of all files in dir (except scm databases)
+    for filepath in args.filepaths:
+        if not os.path.exists(filepath):
+            sys.stderr.write('{0}: file does not exist.  Ignored.\n'.format(filepath))
+            continue
+        elif os.path.isdir(filepath):
+            sys.stderr.write('{0}: is a directory ignored.  Ignored.\n'.format(filepath))
+            continue
+        with open(filepath, 'ab') as fobj:
+            fobj.write(template.format(filepath))
+    return 0
+
+MODIFY_PARSER.set_defaults(run_cmd=modify_cmd)
+
+ARGS = PARSER.parse_args()
+
+sys.exit(ARGS.run_cmd(ARGS))
