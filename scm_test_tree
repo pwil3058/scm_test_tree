@@ -26,6 +26,7 @@ import locale
 import gettext
 
 APP_NAME = "scm_test_tree"
+COUNT_FILE = ".scmtt_modify_count"
 
 # find the locale directory
 # first look in the source directory (so that we can run uninstalled)
@@ -88,6 +89,7 @@ def create_cmd(args):
                 open(bfpath, 'w').write('{0}:\000is a binary file.\n'.format(bfpath))
                 hfpath = dname + sdname + '.hidden{0}'.format(findex)
                 open(hfpath, 'w').write('{0}:is a hidden file.\n'.format(hfpath))
+    open(COUNT_FILE, 'w').write("0")
     return 0
 
 CREATE_PARSER.set_defaults(run_cmd=create_cmd)
@@ -120,13 +122,20 @@ MODIFY_PARSER.add_argument(
 
 def modify_cmd(args):
     '''Execute the "modify" sub command using the supplied args'''
+    try:
+        modno = int(open(COUNT_FILE, 'r').read()) + 1
+        open(COUNT_FILE, 'w').write("{0}".format(modno))
+    except IOError:
+        sys.exit('{0}: is NOT a valid test directory.\n'.format(os.getcwd()))
     template = 'tws \ntws\t\n' if args.opt_add_tws else ''
-    template += 'Path: "{{0}}" modified at: {0}'.format(datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S.%f"))
+    template += 'Path: "{{0}}" modification #{0} at: {1}'.format(modno, datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S.%f"))
     template += '' if args.opt_no_newline else '\n'
     if not args.filepaths:
         pass # TODO: generate list of all files in dir (except scm databases)
     for filepath in args.filepaths:
-        if not os.path.exists(filepath):
+        if filepath == COUNT_FILE:
+            continue
+        elif not os.path.exists(filepath):
             sys.stderr.write('{0}: file does not exist.  Ignored.\n'.format(filepath))
             continue
         elif os.path.isdir(filepath):
