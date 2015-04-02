@@ -83,30 +83,30 @@ def create_cmd(args):
                 sys.exit(edata)
         elif not os.path.isdir(args.basedir):
             sys.exit(_("{0}: is NOT a directory. Aborting.").format(args.basedir))
-        bdname = args.basedir + "/"
+        bdname = args.basedir
     else:
-        bdname = "./"
+        bdname = ""
     for dindex in range(6):
         if dindex:
-            dname = bdname + 'dir{0}/'.format(dindex)
-            os.mkdir(dname)
+            dname = 'dir{0}'.format(dindex)
+            os.mkdir(os.path.join(bdname, dname))
         else:
-            dname = bdname
+            dname = ""
         for sdindex in range(6):
             if sdindex:
                 if not dindex:
                     continue
-                sdname = 'subdir{0}/'.format(sdindex)
-                os.mkdir(dname + sdname)
+                sdname = 'subdir{0}'.format(sdindex)
+                os.mkdir(os.path.join(bdname, dname, sdname))
             else:
                 sdname = ''
             for findex in range(1, 6):
-                tfpath = dname + sdname + 'file{0}'.format(findex)
-                open(tfpath, 'w').write('{0}: is a text file.\n'.format(tfpath))
-                bfpath = dname + sdname + 'binary{0}'.format(findex)
-                open(bfpath, 'w').write('{0}:\000is a binary file.\n'.format(bfpath))
-                hfpath = dname + sdname + '.hidden{0}'.format(findex)
-                open(hfpath, 'w').write('{0}:is a hidden file.\n'.format(hfpath))
+                tfpath = os.path.join(dname, sdname, 'file{0}'.format(findex))
+                open(os.path.join(bdname, tfpath), 'w').write('{0}: is a text file.\n'.format(tfpath))
+                bfpath = os.path.join(dname, sdname, 'binary{0}'.format(findex))
+                open(os.path.join(bdname, bfpath), 'w').write('{0}:\000is a binary file.\n'.format(bfpath))
+                hfpath = os.path.join(dname, sdname, '.hidden{0}'.format(findex))
+                open(os.path.join(bdname, hfpath), 'w').write('{0}:is a hidden file.\n'.format(hfpath))
     open(COUNT_FILE, 'w').write("0")
     return 0
 
