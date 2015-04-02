@@ -66,14 +66,32 @@ CREATE_PARSER = SUB_CMD_PARSER.add_parser(
     description=_('Create a file tree suitable for testing "darning" functionality.'),
 )
 
+CREATE_PARSER.add_argument(
+    'basedir',
+    metavar=_('target directory'),
+    nargs='?',
+    help=_('the name of the directory (created if necessary) where test trees is to be created (default: ".").'),
+)
+
 def create_cmd(args):
     '''Execute the "create" sub command using the supplied args'''
+    if args.basedir:
+        if not os.path.exists(args.basedir):
+            try:
+                os.makedirs(args.basedir)
+            except os.error as edata:
+                sys.exit(edata)
+        elif not os.path.isdir(args.basedir):
+            sys.exit(_("{0}: is NOT a directory. Aborting.").format(args.basedir))
+        bdname = args.basedir + "/"
+    else:
+        bdname = "./"
     for dindex in range(6):
         if dindex:
-            dname = 'dir{0}/'.format(dindex)
+            dname = bdname + 'dir{0}/'.format(dindex)
             os.mkdir(dname)
         else:
-            dname = ''
+            dname = bdname
         for sdindex in range(6):
             if sdindex:
                 if not dindex:
@@ -126,7 +144,7 @@ def modify_cmd(args):
         modno = int(open(COUNT_FILE, 'r').read()) + 1
         open(COUNT_FILE, 'w').write("{0}".format(modno))
     except IOError:
-        sys.exit('{0}: is NOT a valid test directory.\n'.format(os.getcwd()))
+        sys.exit(_('{0}: is NOT a valid test directory. Aborting.\n').format(os.getcwd()))
     template = 'tws \ntws\t\n' if args.opt_add_tws else ''
     template += 'Path: "{{0}}" modification #{0} at: {1}'.format(modno, datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S.%f"))
     template += '' if args.opt_no_newline else '\n'
