@@ -91,6 +91,31 @@ def modify_cmd(args):
 
 MODIFY_PARSER.set_defaults(run_cmd=modify_cmd)
 
+GUI_PARSER = SUB_CMD_PARSER.add_parser(
+    'gui',
+    description=_('Launch a GUI for managing a test file tree.'),
+)
+
+def gui_cmd(args):
+    '''Execute the "gui" sub command using the supplied args'''
+    import gtk
+    from scm_test_tree_pkg import dialogue
+    from scm_test_tree_pkg import gui
+    try:
+        dialogue.report_any_problems(ifce.init())
+        gui.MainWindow().show()
+        gtk.main()
+    except (SystemExit, KeyboardInterrupt):
+        pass
+    except Exception:
+        dialogue.report_exception(sys.exc_info())
+        return 3
+    finally:
+        ifce.close()
+    return 0
+
+GUI_PARSER.set_defaults(run_cmd=gui_cmd)
+
 ARGS = PARSER.parse_args()
 
 sys.exit(ARGS.run_cmd(ARGS))

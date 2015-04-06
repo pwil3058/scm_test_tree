@@ -1,4 +1,4 @@
-### Copyright (C) 2015 Peter Williams <peter_ono@users.sourceforge.net>
+### Copyright (C) 2015 Peter Williams <pwil3058@gmail.com>
 ###
 ### This program is free software; you can redistribute it and/or modify
 ### it under the terms of the GNU General Public License as published by
@@ -19,6 +19,8 @@ import os
 import datetime
 
 COUNT_FILE = ".scmtt_modify_count"
+
+Result = collections.namedtuple("Result", ["OK", "msg"])
 
 def create_test_tree(base_dir_name=""):
     '''Execute the "create" sub command using the supplied args'''
@@ -61,27 +63,89 @@ def create_test_tree(base_dir_name=""):
                     open(os.path.join(base_dir_name, fpath), 'w').write(c_template.format(fpath))
     return 0
 
-def modify_files(filepath_list, add_tws=False, no_newline=False):
+def modify_files(filepath_list, add_tws=False, no_newline=False, gui_calling=False):
     '''Execute the "modify" sub command using the supplied args'''
     try:
         modno = int(open(COUNT_FILE, 'r').read()) + 1
         open(COUNT_FILE, 'w').write("{0}".format(modno))
     except IOError:
-        sys.exit(_('{0}: is NOT a valid test directory. Aborting.\n').format(os.getcwd()))
+        emsg = _('{0}: is NOT a valid test directory. Aborting.\n').format(os.getcwd())
+        if gui_calling:
+            return cmd_result.Result(cmd_result.ERROR, "", emsg)
+        else:
+            return emsg
     template = 'tws \ntws\t\n' if add_tws else ''
     template += 'Path: "{{0}}" modification #{0} at: {1}'.format(modno, datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S.%f"))
     template += '' if no_newline else '\n'
     if not filepath_list:
         pass # TODO: generate list of all files in dir (except scm databases)
+    combined_emsgs = ""
     for filepath in filepath_list:
         if filepath == COUNT_FILE:
             continue
         elif not os.path.exists(filepath):
-            sys.stderr.write('{0}: file does not exist.  Ignored.\n'.format(filepath))
+            emsg = '{0}: file does not exist.  Ignored.\n'.format(filepath)
+            if gui_calling:
+                combined_emsgs += emsg
+            else:
+                sys.stderr.write(msg)
             continue
         elif os.path.isdir(filepath):
-            sys.stderr.write('{0}: is a directory ignored.  Ignored.\n'.format(filepath))
+            emsg = '{0}: is a directory ignored.  Ignored.\n'.format(filepath)
+            if gui_calling:
+                combined_emsgs += emsg
+            else:
+                sys.stderr.write(msg)
             continue
-        with open(filepath, 'ab') as fobj:
-            fobj.write(template.format(filepath))
+        try:
+            with open(filepath, 'ab') as fobj:
+                fobj.write(template.format(filepath))
+        except IOError as edata:
+            emsg = "{0}: {1}\n".format(edata.filename, edata.strerror)
+            if gui_calling:
+                combined_emsgs += emsg
+            else:
+                sys.stderr.write(msg)
+    if gui_calling:
+        from scm_test_tree_pkg import cmd_result
+        return cmd_result.Result(cmd_result.WARNING if combined_emsgs else cmd_result.OK, "", combined_emsgs)
     return 0
+
+in_valid_test_gnd = False
+
+TERM = None
+log = False
+
+def get_test_tree_root(fdir=None):
+    if not fdir:
+        fdir = os.getcwd()
+    root = fdir
+    while True:
+        cf_path = os.path.join(root, COUNT_FILE)
+        if os.path.exists(cf_path) and not os.path.isdir(cf_path):
+            return root
+        newroot = os.path.dirname(root)
+        if root == newroot:
+            break
+        root = newroot
+    return None
+
+def init():
+    from scm_test_tree_pkg import terminal
+    from scm_test_tree_pkg import ws_event
+    from scm_test_tree_pkg import cmd_result
+    global TERM
+    global in_valid_test_gnd
+    if terminal.AVAILABLE:
+        TERM = terminal.Terminal()
+    base_dir = get_test_tree_root()
+    if base_dir is not None:
+        in_valid_test_gnd = True
+    else:
+        in_valid_test_gnd = False
+    ws_event.notify_events(ws_event.CHANGE_WD)
+    return cmd_result.Result(cmd_result.OK, "", "")
+
+def close():
+    from scm_test_tree_pkg import cmd_result
+    return cmd_result.Result(cmd_result.OK, "", "")
