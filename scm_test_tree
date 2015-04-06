@@ -25,31 +25,10 @@ import datetime
 import locale
 import gettext
 
-APP_NAME = "scm_test_tree"
+from scm_test_tree_pkg import i18n
+from scm_test_tree_pkg import ifce
+
 COUNT_FILE = ".scmtt_modify_count"
-
-# find the locale directory
-# first look in the source directory (so that we can run uninstalled)
-LOCALE_DIR = os.path.join(sys.path[0], 'i10n')
-if not os.path.exists(LOCALE_DIR) or not os.path.isdir(LOCALE_DIR):
-    # if we get here it means we're installed and we assume that the
-    # locale files were installed under the same prefix as the
-    # application.
-    _TAILEND = os.path.join('share', 'locale')
-    _prefix = sys.path[0]
-    _last_prefix = None # needed to prevent possible infinite loop
-    while _prefix and _prefix != _last_prefix:
-        LOCALE_DIR = os.path.join(_prefix, _TAILEND)
-        if os.path.exists(LOCALE_DIR) and os.path.isdir(LOCALE_DIR):
-            break
-        _last_prefix = _prefix
-        _prefix = os.path.dirname(_prefix)
-    # As a last resort, try the usual place
-    if not (os.path.exists(LOCALE_DIR) and os.path.isdir(LOCALE_DIR)):
-        LOCALE_DIR = os.path.join(sys.prefix, 'share', 'locale')
-
-# Lets tell those details to gettext
-gettext.install(APP_NAME, localedir=LOCALE_DIR)
 
 PARSER = argparse.ArgumentParser(description=_('Provide a modifiable test file tree.'))
 
@@ -75,40 +54,7 @@ CREATE_PARSER.add_argument(
 
 def create_cmd(args):
     '''Execute the "create" sub command using the supplied args'''
-    if args.basedir:
-        if not os.path.exists(args.basedir):
-            try:
-                os.makedirs(args.basedir)
-            except os.error as edata:
-                sys.exit(edata)
-        elif not os.path.isdir(args.basedir):
-            sys.exit(_("{0}: is NOT a directory. Aborting.").format(args.basedir))
-        bdname = args.basedir
-    else:
-        bdname = ""
-    for dindex in range(6):
-        if dindex:
-            dname = 'dir{0}'.format(dindex)
-            os.mkdir(os.path.join(bdname, dname))
-        else:
-            dname = ""
-        for sdindex in range(6):
-            if sdindex:
-                if not dindex:
-                    continue
-                sdname = 'subdir{0}'.format(sdindex)
-                os.mkdir(os.path.join(bdname, dname, sdname))
-            else:
-                sdname = ''
-            for findex in range(1, 6):
-                tfpath = os.path.join(dname, sdname, 'file{0}'.format(findex))
-                open(os.path.join(bdname, tfpath), 'w').write('{0}: is a text file.\n'.format(tfpath))
-                bfpath = os.path.join(dname, sdname, 'binary{0}'.format(findex))
-                open(os.path.join(bdname, bfpath), 'w').write('{0}:\000is a binary file.\n'.format(bfpath))
-                hfpath = os.path.join(dname, sdname, '.hidden{0}'.format(findex))
-                open(os.path.join(bdname, hfpath), 'w').write('{0}:is a hidden file.\n'.format(hfpath))
-    open(COUNT_FILE, 'w').write("0")
-    return 0
+    return ifce.create_test_tree(args.basedir)
 
 CREATE_PARSER.set_defaults(run_cmd=create_cmd)
 
@@ -140,28 +86,7 @@ MODIFY_PARSER.add_argument(
 
 def modify_cmd(args):
     '''Execute the "modify" sub command using the supplied args'''
-    try:
-        modno = int(open(COUNT_FILE, 'r').read()) + 1
-        open(COUNT_FILE, 'w').write("{0}".format(modno))
-    except IOError:
-        sys.exit(_('{0}: is NOT a valid test directory. Aborting.\n').format(os.getcwd()))
-    template = 'tws \ntws\t\n' if args.opt_add_tws else ''
-    template += 'Path: "{{0}}" modification #{0} at: {1}'.format(modno, datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S.%f"))
-    template += '' if args.opt_no_newline else '\n'
-    if not args.filepaths:
-        pass # TODO: generate list of all files in dir (except scm databases)
-    for filepath in args.filepaths:
-        if filepath == COUNT_FILE:
-            continue
-        elif not os.path.exists(filepath):
-            sys.stderr.write('{0}: file does not exist.  Ignored.\n'.format(filepath))
-            continue
-        elif os.path.isdir(filepath):
-            sys.stderr.write('{0}: is a directory ignored.  Ignored.\n'.format(filepath))
-            continue
-        with open(filepath, 'ab') as fobj:
-            fobj.write(template.format(filepath))
-    return 0
+    return ifce.modify_files(args.filepaths, add_tws=args.opt_add_tws, no_newline=args.opt_no_newline)
 
 MODIFY_PARSER.set_defaults(run_cmd=modify_cmd)
 
