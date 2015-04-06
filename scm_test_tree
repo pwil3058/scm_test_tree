@@ -50,6 +50,7 @@ CREATE_PARSER.add_argument(
     metavar=_('target directory'),
     nargs='?',
     help=_('the name of the directory (created if necessary) where test trees is to be created (default: ".").'),
+    default=""
 )
 
 def create_cmd(args):

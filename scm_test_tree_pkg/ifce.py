@@ -27,13 +27,21 @@ def create_test_tree(base_dir_name=""):
             try:
                 os.makedirs(base_dir_name)
             except os.error as edata:
-                sys.exit(edata)
+                return "{0}: {1}".format(edata.filename, edata.strerror)
         elif not os.path.isdir(base_dir_name):
-            sys.exit(_("{0}: is NOT a directory. Aborting.").format(base_dir_name))
+            return _("{0}: is NOT a directory. Aborting.").format(base_dir_name)
+    # Do this here to catch base directory permission problems early
+    try:
+        open(os.path.join(base_dir_name, COUNT_FILE), 'w').write("0")
+    except IOError as edata:
+        return "{0}: {1}".format(edata.filename, edata.strerror)
     for dindex in range(6):
         if dindex:
             dname = 'dir{0}'.format(dindex)
-            os.mkdir(os.path.join(base_dir_name, dname))
+            try:
+                os.mkdir(os.path.join(base_dir_name, dname))
+            except OSError as edata:
+                sys.stderr.write("{0}: {1}\n".format(edata.filename, edata.strerror))
         else:
             dname = ""
         for sdindex in range(6):
@@ -41,17 +49,16 @@ def create_test_tree(base_dir_name=""):
                 if not dindex:
                     continue
                 sdname = 'subdir{0}'.format(sdindex)
-                os.mkdir(os.path.join(base_dir_name, dname, sdname))
+                try:
+                    os.mkdir(os.path.join(base_dir_name, dname, sdname))
+                except OSError as edata:
+                    sys.stderr.write("{0}: {1}\n".format(edata.filename, edata.strerror))
             else:
                 sdname = ''
             for findex in range(1, 6):
-                tfpath = os.path.join(dname, sdname, 'file{0}'.format(findex))
-                open(os.path.join(base_dir_name, tfpath), 'w').write('{0}: is a text file.\n'.format(tfpath))
-                bfpath = os.path.join(dname, sdname, 'binary{0}'.format(findex))
-                open(os.path.join(base_dir_name, bfpath), 'w').write('{0}:\000is a binary file.\n'.format(bfpath))
-                hfpath = os.path.join(dname, sdname, '.hidden{0}'.format(findex))
-                open(os.path.join(base_dir_name, hfpath), 'w').write('{0}:is a hidden file.\n'.format(hfpath))
-    open(os.path.join(base_dir_name, COUNT_FILE), 'w').write("0")
+                for (fn_template, c_template) in [("file{0}", _("{0}: is a text file.\n")), ("binary{0}", _("{0}:\000is a binary file.\n")), (".hidden{0}", _("{0}:is a hidden file.\n"))]:
+                    fpath = os.path.join(dname, sdname, fn_template.format(findex))
+                    open(os.path.join(base_dir_name, fpath), 'w').write(c_template.format(fpath))
     return 0
 
 def modify_files(filepath_list, add_tws=False, no_newline=False):
