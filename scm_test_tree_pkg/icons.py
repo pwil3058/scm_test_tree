@@ -41,14 +41,16 @@ APP_ICON_FILE = os.path.join(os.path.dirname(_libdir), APP_ICON + os.extsep + 'p
 _FACTORY = gtk.IconFactory()
 _FACTORY.add_default()
 
-StockAlias = collections.namedtuple('StockAlias', ['name', 'alias', 'text'])
+StockAlias = collections.namedtuple("StockAlias", ["name", "alias", "text"])
 
 # Icons that are aliased to Gtk or other stock items
+STOCK_INSERT = config_data.APP_NAME + "_stock_insert"
 STOCK_RENAME = config_data.APP_NAME + "_stock_rename"
 
 # Icons that have to be designed eventually (using GtK stock in the meantime)
 _STOCK_ALIAS_LIST = [
-    StockAlias(name=STOCK_RENAME, alias=gtk.STOCK_PASTE, text=''),
+    StockAlias(name=STOCK_INSERT, alias=gtk.STOCK_ADD, text="_Insert"),
+    StockAlias(name=STOCK_RENAME, alias=gtk.STOCK_PASTE, text=""),
 ]
 
 

@@ -18,6 +18,7 @@ import os
 import gtk
 
 from scm_test_tree_pkg import cmd_result
+from scm_test_tree_pkg import config_data
 
 from scm_test_tree_pkg import gutils
 
@@ -100,6 +101,12 @@ class MessageDialog(gtk.MessageDialog):
             parent = main_window
         gtk.MessageDialog.__init__(self, parent=parent, flags=flags, type=type, buttons=buttons, message_format=message_format)
 
+class FileChooserDialog(gtk.FileChooserDialog):
+    def __init__(self, title=None, parent=None, action=gtk.FILE_CHOOSER_ACTION_OPEN, buttons=None, backend=None):
+        if not parent:
+            parent = main_window
+        gtk.FileChooserDialog.__init__(self, title=title, parent=parent, action=action, buttons=buttons, backend=backend)
+
 class QuestionDialog(Dialog):
     def __init__(self, title=None, parent=None, flags=0, buttons=None, question=""):
         Dialog.__init__(self, title=title, parent=parent, flags=flags, buttons=buttons)
@@ -159,6 +166,32 @@ def ask_force_or_cancel(result, clarification=None, parent=None):
     question = _form_question(result, clarification)
     return ask_question(question, parent, buttons)
 
+def ask_dir_name(prompt, suggestion=None, existing=True, parent=None):
+    if existing:
+        mode = gtk.FILE_CHOOSER_ACTION_SELECT_FOLDER
+        if suggestion and not os.path.exists(suggestion):
+            suggestion = None
+    else:
+        mode = gtk.FILE_CHOOSER_ACTION_CREATE_FOLDER
+    dialog = FileChooserDialog(prompt, parent, mode,
+                               (gtk.STOCK_CANCEL, gtk.RESPONSE_CANCEL,
+                                gtk.STOCK_OK, gtk.RESPONSE_OK))
+    dialog.set_default_response(gtk.RESPONSE_OK)
+    if suggestion:
+        if os.path.isdir(suggestion):
+            dialog.set_current_folder(suggestion)
+        else:
+            dirname = os.path.dirname(suggestion)
+            if dirname:
+                dialog.set_current_folder(dirname)
+    response = dialog.run()
+    if response == gtk.RESPONSE_OK:
+        new_dir_name = os.path.relpath(dialog.get_filename())
+    else:
+        new_dir_name = None
+    dialog.destroy()
+    return new_dir_name
+
 def inform_user(msg, parent=None, problem_type=gtk.MESSAGE_INFO):
     dialog = MessageDialog(parent=parent,
                            flags=gtk.DIALOG_MODAL|gtk.DIALOG_DESTROY_WITH_PARENT,
@@ -181,23 +214,14 @@ def report_failure(failure, parent=None):
     if result.ecode != 0:
         inform_user(os.linesep.join(result[1:]), parent, gtk.MESSAGE_ERROR)
 
-_REPORT_REQUEST_MSG = \
-_('''
-Please report this problem by raising an issue at:
-  <https://github.com/pwil3058/scm_test_tree/issues>
-and including a copy of the details below this message.
-
-Thank you.
-''')
-
 def report_exception(exc_data, parent=None):
     import traceback
     msg = ''.join(traceback.format_exception(exc_data[0], exc_data[1], exc_data[2]))
     dialog = MessageDialog(parent=parent,
                            flags=gtk.DIALOG_MODAL|gtk.DIALOG_DESTROY_WITH_PARENT,
                            type=gtk.MESSAGE_ERROR, buttons=gtk.BUTTONS_CLOSE,
-                           message_format=_REPORT_REQUEST_MSG)
-    dialog.set_title(_('gwsmhg: Unexpected Exception'))
+                           message_format=config_data.get_report_request_msg())
+    dialog.set_title(_(config_data.APP_NAME + ": Unexpected Exception"))
     dialog.format_secondary_text(msg)
     dialog.run()
     dialog.destroy()

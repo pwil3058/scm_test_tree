@@ -89,5 +89,6 @@ def set(section, oname, val):
 define(config_data.APP_NAME, 'last_wd', Defn(str, ""))
 
 define("main_window", "last_geometry", Defn(str, ""))
+define("main_window", "vpaned_position", Defn(int, -1))
 
 load_recollections()

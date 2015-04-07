@@ -134,12 +134,17 @@ def init():
     from scm_test_tree_pkg import terminal
     from scm_test_tree_pkg import ws_event
     from scm_test_tree_pkg import cmd_result
+    from scm_test_tree_pkg import config
     global TERM
     global in_valid_test_gnd
     if terminal.AVAILABLE:
         TERM = terminal.Terminal()
     base_dir = get_test_tree_root()
     if base_dir is not None:
+        from scm_test_tree_pkg import config
+        os.chdir(base_dir)
+        TERM.set_cwd(base_dir)
+        config.TGndPathTable.append_saved_wd(base_dir)
         in_valid_test_gnd = True
     else:
         in_valid_test_gnd = False
@@ -149,3 +154,38 @@ def init():
 def close():
     from scm_test_tree_pkg import cmd_result
     return cmd_result.Result(cmd_result.OK, "", "")
+
+def chdir(newdir=None):
+    from scm_test_tree_pkg import terminal
+    from scm_test_tree_pkg import ws_event
+    from scm_test_tree_pkg import cmd_result
+    from scm_test_tree_pkg import recollect
+    from scm_test_tree_pkg import config_data
+    from scm_test_tree_pkg import utils
+    global in_valid_test_gnd
+    old_wd = os.getcwd()
+    retval = cmd_result.Result(cmd_result.OK, "", "")
+    if newdir:
+        try:
+            os.chdir(newdir)
+        except OSError as err:
+            import errno
+            ecode = errno.errorcode[err.errno]
+            emsg = err.strerror
+            retval = cmd_result.Result(cmd_result.ERROR, "", '%s: "%s" :%s' % (ecode, newdir, emsg))
+    base_dir = get_test_tree_root()
+    if base_dir is not None:
+        from scm_test_tree_pkg import config
+        os.chdir(base_dir)
+        TERM.set_cwd(base_dir)
+        config.TGndPathTable.append_saved_wd(base_dir)
+        in_valid_test_gnd = True
+    else:
+        in_valid_test_gnd = False
+    new_wd = os.getcwd()
+    recollect.set(config_data.APP_NAME, "last_wd", new_wd)
+    if not utils.samefile(new_wd, old_wd):
+        if TERM:
+            TERM.set_cwd(new_wd)
+    ws_event.notify_events(ws_event.CHANGE_WD)
+    return retval

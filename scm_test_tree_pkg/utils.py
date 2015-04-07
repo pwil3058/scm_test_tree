@@ -19,6 +19,27 @@ import shutil
 from scm_test_tree_pkg import fsdb
 from scm_test_tree_pkg import cmd_result
 from scm_test_tree_pkg import ws_event
+from scm_test_tree_pkg import urlops
+
+HOME = os.path.expanduser("~")
+
+def path_rel_home(path):
+    """Return the given path as a path relative to user's home directory."""
+    if urlops.parse_url(path).scheme:
+        return path
+    path = os.path.abspath(path)
+    len_home = len(HOME)
+    if len(path) >= len_home and HOME == path[:len_home]:
+        path = "~" + path[len_home:]
+    return path
+
+# handle the fact os.path.samefile is not available on all operating systems
+def samefile(filename1, filename2):
+    """Return whether the given paths refer to the same file or not."""
+    try:
+        return os.path.samefile(filename1, filename2)
+    except AttributeError:
+        return os.path.abspath(filename1) == os.path.abspath(filename2)
 
 def create_file(name, console=None):
     """Attempt to create a file with the given name and report the outcome as

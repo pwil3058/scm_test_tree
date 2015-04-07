@@ -1,4 +1,4 @@
-### Copyright (C) 2013 Peter Williams <pwil3058@gmail.com>
+### Copyright (C) 2015 Peter Williams <pwil3058@gmail.com>
 ###
 ### This program is free software; you can redistribute it and/or modify
 ### it under the terms of the GNU General Public License as published by
@@ -13,24 +13,18 @@
 ### along with this program; if not, write to the Free Software
 ### Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
 
-import os
-import gettext
+"""Provide URL operations in a way compatible with both Python 2 and 3"""
 
-HOME = os.path.expanduser("~")
+_USE_URLPARSE = True
+try:
+    import urlparse
+except ImportError:
+    _USE_URLPARSE = False
+    import urllib.parse
 
-APP_NAME = "scm_test_tree"
-
-CONFIG_DIR_NAME = os.sep.join([HOME, "." + APP_NAME + ".d"])
-
-if not os.path.exists(CONFIG_DIR_NAME):
-    os.mkdir(CONFIG_DIR_NAME, 0o775)
-
-def get_report_request_msg():
-    return \
-    _('''
-    Please report this problem by raising an issue at:
-      <https://github.com/pwil3058/scm_test_tree/issues>
-    and including a copy of the details below this message.
-
-    Thank you.
-    ''')
+def parse_url(path, scheme="", allow_fragments=True):
+    """Return ParseResult for the given path"""
+    if _USE_URLPARSE:
+        return urlparse.urlparse(path, scheme, allow_fragments)
+    else:
+        return urllib.parse.urlparse(path, scheme, allow_fragments)
