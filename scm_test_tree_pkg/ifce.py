@@ -22,28 +22,39 @@ COUNT_FILE = ".scmtt_modify_count"
 
 Result = collections.namedtuple("Result", ["OK", "msg"])
 
-def create_test_tree(base_dir_name=""):
+def create_test_tree(base_dir_name="", gui_calling=False):
     '''Execute the "create" sub command using the supplied args'''
+    if gui_calling:
+        from scm_test_tree_pkg import cmd_result
     if base_dir_name:
         if not os.path.exists(base_dir_name):
             try:
                 os.makedirs(base_dir_name)
             except os.error as edata:
-                return "{0}: {1}".format(edata.filename, edata.strerror)
+                emsg = "{0}: {1}".format(edata.filename, edata.strerror)
+                return cmd_result.Result(cmd_result.ERROR, "", emsg) if gui_calling else emsg
         elif not os.path.isdir(base_dir_name):
-            return _("{0}: is NOT a directory. Aborting.").format(base_dir_name)
+            emsg = _("{0}: is NOT a directory. Aborting.").format(base_dir_name)
+            return cmd_result.Result(cmd_result.ERROR, "", emsg) if gui_calling else emsg
     # Do this here to catch base directory permission problems early
     try:
         open(os.path.join(base_dir_name, COUNT_FILE), 'w').write("0")
     except IOError as edata:
-        return "{0}: {1}".format(edata.filename, edata.strerror)
+        emsg = "{0}: {1}".format(edata.filename, edata.strerror)
+        return cmd_result.Result(cmd_result.ERROR, "", emsg) if gui_calling else emsg
+    combined_emsgs = ""
     for dindex in range(6):
         if dindex:
             dname = 'dir{0}'.format(dindex)
             try:
                 os.mkdir(os.path.join(base_dir_name, dname))
             except OSError as edata:
-                sys.stderr.write("{0}: {1}\n".format(edata.filename, edata.strerror))
+                emsg = "{0}: {1}\n".format(edata.filename, edata.strerror)
+                if gui_calling:
+                    combined_emsgs += emsg
+                else:
+                    sys.stderr.write(msg)
+            continue
         else:
             dname = ""
         for sdindex in range(6):
@@ -54,17 +65,32 @@ def create_test_tree(base_dir_name=""):
                 try:
                     os.mkdir(os.path.join(base_dir_name, dname, sdname))
                 except OSError as edata:
-                    sys.stderr.write("{0}: {1}\n".format(edata.filename, edata.strerror))
+                    emsg = "{0}: {1}\n".format(edata.filename, edata.strerror)
+                    if gui_calling:
+                        combined_emsgs += emsg
+                    else:
+                        sys.stderr.write(msg)
             else:
                 sdname = ''
             for findex in range(1, 6):
                 for (fn_template, c_template) in [("file{0}", _("{0}: is a text file.\n")), ("binary{0}", _("{0}:\000is a binary file.\n")), (".hidden{0}", _("{0}:is a hidden file.\n"))]:
                     fpath = os.path.join(dname, sdname, fn_template.format(findex))
-                    open(os.path.join(base_dir_name, fpath), 'w').write(c_template.format(fpath))
+                    try:
+                        open(os.path.join(base_dir_name, fpath), 'w').write(c_template.format(fpath))
+                    except IOError as edata:
+                        emsg = "{0}: {1}\n".format(edata.filename, edata.strerror)
+                        if gui_calling:
+                            combined_emsgs += emsg
+                        else:
+                            sys.stderr.write(msg)
+    if gui_calling:
+        return cmd_result.Result(cmd_result.WARNING if combined_emsgs else cmd_result.OK, "", combined_emsgs)
     return 0
 
 def modify_files(filepath_list, add_tws=False, no_newline=False, gui_calling=False):
     '''Execute the "modify" sub command using the supplied args'''
+    if gui_calling:
+        from scm_test_tree_pkg import cmd_result
     try:
         modno = int(open(COUNT_FILE, 'r').read()) + 1
         open(COUNT_FILE, 'w').write("{0}".format(modno))
@@ -107,7 +133,6 @@ def modify_files(filepath_list, add_tws=False, no_newline=False, gui_calling=Fal
             else:
                 sys.stderr.write(msg)
     if gui_calling:
-        from scm_test_tree_pkg import cmd_result
         return cmd_result.Result(cmd_result.WARNING if combined_emsgs else cmd_result.OK, "", combined_emsgs)
     return 0
 
@@ -130,22 +155,25 @@ def get_test_tree_root(fdir=None):
         root = newroot
     return None
 
-def init():
+def init(start_dir=None):
     from scm_test_tree_pkg import terminal
     from scm_test_tree_pkg import ws_event
     from scm_test_tree_pkg import cmd_result
+    from scm_test_tree_pkg import config_data
     from scm_test_tree_pkg import config
+    from scm_test_tree_pkg import recollect
     global TERM
     global in_valid_test_gnd
     if terminal.AVAILABLE:
         TERM = terminal.Terminal()
-    base_dir = get_test_tree_root()
+    base_dir = get_test_tree_root(start_dir)
     if base_dir is not None:
         from scm_test_tree_pkg import config
         os.chdir(base_dir)
         TERM.set_cwd(base_dir)
         config.TGndPathTable.append_saved_wd(base_dir)
         in_valid_test_gnd = True
+        recollect.set(config_data.APP_NAME, "last_wd", base_dir)
     else:
         in_valid_test_gnd = False
     ws_event.notify_events(ws_event.CHANGE_WD)
@@ -180,10 +208,10 @@ def chdir(newdir=None):
         TERM.set_cwd(base_dir)
         config.TGndPathTable.append_saved_wd(base_dir)
         in_valid_test_gnd = True
+        recollect.set(config_data.APP_NAME, "last_wd", base_dir)
     else:
         in_valid_test_gnd = False
     new_wd = os.getcwd()
-    recollect.set(config_data.APP_NAME, "last_wd", new_wd)
     if not utils.samefile(new_wd, old_wd):
         if TERM:
             TERM.set_cwd(new_wd)

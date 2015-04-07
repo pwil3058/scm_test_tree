@@ -14,6 +14,7 @@ from scm_test_tree_pkg import ws_event
 from scm_test_tree_pkg import recollect
 from scm_test_tree_pkg import icons
 from scm_test_tree_pkg import file_tree
+from scm_test_tree_pkg import cmd_result
 
 class MainWindow(gtk.Window, dialogue.BusyIndicator, ws_actions.AGandUIManager):
     UI_DESCR = \
@@ -22,6 +23,7 @@ class MainWindow(gtk.Window, dialogue.BusyIndicator, ws_actions.AGandUIManager):
             <menubar name="left_side_menubar">
                 <menu action="working_directory_menu">
                     <menuitem action="change_wd_action"/>
+                    <menuitem action="new_tgnd_action"/>
                     <menuitem action="quit_action"/>
                 </menu>
             </menubar>
@@ -72,9 +74,11 @@ class MainWindow(gtk.Window, dialogue.BusyIndicator, ws_actions.AGandUIManager):
                 ("working_directory_menu", None, _('_Working Directory')),
                 ("configuration_menu", None, _('_Configuration')),
                 ("change_wd_action", gtk.STOCK_OPEN, _('_Open'), "",
-                 _('Change current working directory'), self._change_wd_acb),
-                ("quit_action", gtk.STOCK_QUIT, _('_Quit'), "",
-                 _('Quit'), self._quit),
+                 _("Change current working directory"), self._change_wd_acb),
+                ("new_tgnd_action", gtk.STOCK_NEW, _('_New'), "",
+                 _("Create a new test ground and change workspace to that directory"), self._new_tgnd_acb),
+                ("quit_action", gtk.STOCK_QUIT, _("_Quit"), "",
+                 _("Quit"), self._quit),
             ])
     def _quit(self, _widget):
         gtk.main_quit()
@@ -94,6 +98,13 @@ class MainWindow(gtk.Window, dialogue.BusyIndicator, ws_actions.AGandUIManager):
                 open_dialog.unshow_busy()
                 dialogue.report_any_problems(result)
         open_dialog.destroy()
+    def _new_tgnd_acb(self, _action):
+        dirname = dialogue.ask_dir_name(_("{0}: Browse for Directory").format(config_data.APP_NAME), existing=True, parent=self)
+        if dirname:
+            result = ifce.create_test_tree(dirname, gui_calling=True)
+            if cmd_result.is_less_than_error(result):
+                ifce.chdir(dirname)
+            dialogue.report_any_problems(result)
     def _configure_event_cb(self, widget, event):
         recollect.set("main_window", "last_geometry", "{0.width}x{0.height}+{0.x}+{0.y}".format(event))
     def _paned_notify_cb(self, widget, parameter, oname=None):

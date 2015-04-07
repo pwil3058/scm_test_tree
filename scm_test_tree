@@ -101,8 +101,10 @@ def gui_cmd(args):
     import gtk
     from scm_test_tree_pkg import dialogue
     from scm_test_tree_pkg import gui
+    from scm_test_tree_pkg import recollect
+    from scm_test_tree_pkg import config_data
     try:
-        dialogue.report_any_problems(ifce.init())
+        dialogue.report_any_problems(ifce.init(recollect.get(config_data.APP_NAME, "last_wd")))
         gui.MainWindow().show()
         gtk.main()
     except (SystemExit, KeyboardInterrupt):
