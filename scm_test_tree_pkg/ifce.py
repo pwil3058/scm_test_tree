@@ -20,8 +20,6 @@ import datetime
 
 COUNT_FILE = ".scmtt_modify_count"
 
-Result = collections.namedtuple("Result", ["OK", "msg"])
-
 def create_test_tree(base_dir_name="", gui_calling=False):
     '''Execute the "create" sub command using the supplied args'''
     if gui_calling:
@@ -53,7 +51,7 @@ def create_test_tree(base_dir_name="", gui_calling=False):
                 if gui_calling:
                     combined_emsgs += emsg
                 else:
-                    sys.stderr.write(msg)
+                    sys.stderr.write(emsg)
             continue
         else:
             dname = ""
@@ -69,7 +67,7 @@ def create_test_tree(base_dir_name="", gui_calling=False):
                     if gui_calling:
                         combined_emsgs += emsg
                     else:
-                        sys.stderr.write(msg)
+                        sys.stderr.write(emsg)
             else:
                 sdname = ''
             for findex in range(1, 6):
@@ -82,7 +80,7 @@ def create_test_tree(base_dir_name="", gui_calling=False):
                         if gui_calling:
                             combined_emsgs += emsg
                         else:
-                            sys.stderr.write(msg)
+                            sys.stderr.write(emsg)
     if gui_calling:
         return cmd_result.Result(cmd_result.WARNING if combined_emsgs else cmd_result.OK, "", combined_emsgs)
     return 0
@@ -114,14 +112,14 @@ def modify_files(filepath_list, add_tws=False, no_newline=False, gui_calling=Fal
             if gui_calling:
                 combined_emsgs += emsg
             else:
-                sys.stderr.write(msg)
+                sys.stderr.write(emsg)
             continue
         elif os.path.isdir(filepath):
             emsg = '{0}: is a directory ignored.  Ignored.\n'.format(filepath)
             if gui_calling:
                 combined_emsgs += emsg
             else:
-                sys.stderr.write(msg)
+                sys.stderr.write(emsg)
             continue
         try:
             with open(filepath, 'ab') as fobj:
@@ -131,7 +129,7 @@ def modify_files(filepath_list, add_tws=False, no_newline=False, gui_calling=Fal
             if gui_calling:
                 combined_emsgs += emsg
             else:
-                sys.stderr.write(msg)
+                sys.stderr.write(emsg)
     if gui_calling:
         return cmd_result.Result(cmd_result.WARNING if combined_emsgs else cmd_result.OK, "", combined_emsgs)
     return 0
