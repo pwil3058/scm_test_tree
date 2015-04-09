@@ -225,7 +225,7 @@ class OsSnapshotDir(object):
         for dkey in dkeys:
             if not show_hidden and self._is_hidden_dir(dkey):
                 continue
-            dirs.append(Data(name=dkey, status=self._subdirs[dkey].status, related_file=None))
+            dirs.append(Data(name=dkey, status=self._subdirs[dkey]._status, related_file=None))
         files = []
         fkeys = list(self._files.keys())
         fkeys.sort()
