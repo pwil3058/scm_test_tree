@@ -236,7 +236,7 @@ class FileTreeView(tlview.TreeView, ws_actions.AGandUIManager, ws_event.Listener
         # TODO: investigate whether repopulate() needs to be called here
         self.repopulate()
     def auto_update(self, _arg=None):
-        if not self._file_db.is_current():
+        if not self._file_db.is_current:
             self.update()
     def populate_action_groups(self):
         self.action_groups[actions.AC_DONT_CARE].add_action(self.show_hidden_action)
