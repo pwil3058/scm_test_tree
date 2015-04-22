@@ -18,9 +18,9 @@ import os.path
 import collections
 
 import gtk
-import gtk.gdk, os.path, sys, collections
+import gtk.gdk
 
-from scm_test_tree_pkg import config_data
+from . import config_data
 
 # find the icons directory
 # first look in the source directory (so that we can run uninstalled)

@@ -1,4 +1,4 @@
-### Copyright (C) 2005 Peter Williams <pwil3058@gmail.com>
+### Copyright (C) 2005-2015 Peter Williams <pwil3058@gmail.com>
 
 ### This program is free software; you can redistribute it and/or modify
 ### it under the terms of the GNU General Public License as published by
@@ -13,25 +13,26 @@
 ### along with this program; if not, write to the Free Software
 ### Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
 
-import gtk
-import gobject
 import collections
 import os
 import os.path
+
+import gtk
+import gobject
 import pango
 
-from scm_test_tree_pkg import tlview
-from scm_test_tree_pkg import ws_actions
-from scm_test_tree_pkg import ws_event
-from scm_test_tree_pkg import dialogue
-from scm_test_tree_pkg import fsdb
-from scm_test_tree_pkg import actions
-from scm_test_tree_pkg import ws_actions
-from scm_test_tree_pkg import icons
-from scm_test_tree_pkg import gutils
-from scm_test_tree_pkg import ifce
-from scm_test_tree_pkg import cmd_result
-from scm_test_tree_pkg import utils
+from . import utils
+from . import cmd_result
+from . import fsdb
+
+from . import tlview
+from . import gutils
+from . import ifce
+from . import actions
+from . import ws_actions
+from . import dialogue
+from . import ws_event
+from . import icons
 
 def _check_if_force(result):
     return dialogue.ask_force_or_cancel(result) == dialogue.Response.FORCE
@@ -59,6 +60,14 @@ class FileTreeView(tlview.TreeView, ws_actions.AGandUIManager, ws_event.Listener
                 while self.recursive_remove(child_iter):
                     pass
             return self.remove(fsobj_iter)
+        def depopulate(self, dir_iter):
+            child_iter = self.iter_children(dir_iter)
+            if child_iter != None:
+                if self.get_value_named(child_iter, "name") is None:
+                    return # already depopulated and placeholder in place
+                while self.recursive_remove(child_iter):
+                    pass
+            self.insert_place_holder(dir_iter)
         def remove_place_holder(self, dir_iter):
             child_iter = self.iter_children(dir_iter)
             if child_iter and self.get_value_named(child_iter, "name") is None:
@@ -74,9 +83,14 @@ class FileTreeView(tlview.TreeView, ws_actions.AGandUIManager, ws_event.Listener
                 if name is None:
                     return os.path.join(self.fs_path(parent_iter), '')
                 return os.path.join(self.fs_path(parent_iter), name)
+        def _not_yet_populated(self, dir_iter):
+            if self.iter_n_children(dir_iter) < 2:
+                child_iter = self.iter_children(dir_iter)
+                return child_iter is None or self.get_value_named(child_iter, "name") is None
+            return False
         def on_row_expanded_cb(self, view, dir_iter, _dummy):
-            if not view._populate_all:
-                view._update_dir(self.fs_path(dir_iter), dir_iter)
+            if self._not_yet_populated(dir_iter):
+                view._populate(self.fs_path(dir_iter), dir_iter)
                 if self.iter_n_children(dir_iter) > 1:
                     self.remove_place_holder(dir_iter)
         def on_row_collapsed_cb(self, _view, dir_iter, _dummy):
@@ -215,7 +229,7 @@ class FileTreeView(tlview.TreeView, ws_actions.AGandUIManager, ws_event.Listener
         return row
     def __init__(self, show_hidden=False, busy_indicator=None):
         dialogue.BusyIndicatorUser.__init__(self, busy_indicator=busy_indicator)
-        self._file_db = fsdb.OsSnapshotFileDb()
+        self._file_db = fsdb.OsFileDb()
         ws_event.Listener.__init__(self)
         self.show_hidden_action = gtk.ToggleAction('show_hidden_files', _('Show Hidden Files'), _('Show/hide ignored files and those beginning with "."'), None)
         self.show_hidden_action.set_active(show_hidden)
@@ -290,7 +304,7 @@ class FileTreeView(tlview.TreeView, ws_actions.AGandUIManager, ws_event.Listener
         self._update_dir('', None)
         self.unshow_busy()
     def _get_dir_contents(self, dirpath):
-        return self._file_db.dir_contents(dirpath, self.show_hidden_action.get_active())
+        return self._file_db.dir_contents(dirpath, show_hidden=self.show_hidden_action.get_active())
     def _row_expanded(self, dir_iter):
         return self.row_expanded(self.model.get_path(dir_iter))
     def _populate(self, dirpath, parent_iter):
@@ -372,6 +386,9 @@ class FileTreeView(tlview.TreeView, ws_actions.AGandUIManager, ws_event.Listener
             self.model.update_iter_row_tuple(child_iter, row_tuple)
             if self._populate_all or self._row_expanded(child_iter):
                 changed |= self._update_dir(os.path.join(dirpath, name), child_iter)
+            else:
+                # make sure we don't leave bad data in children that were previously expanded
+                self.model.depopulate(child_iter)
             child_iter = self.model.iter_next(child_iter)
         while (child_iter is not None) and self.model.get_value_named(child_iter, 'is_dir'):
             dead_entries.append(child_iter)
@@ -403,7 +420,7 @@ class FileTreeView(tlview.TreeView, ws_actions.AGandUIManager, ws_event.Listener
         return changed
     @staticmethod
     def _get_file_db():
-        return fsdb.OsSnapshotFileDb()
+        return fsdb.OsFileDb()
     def repopulate(self, _arg=None):
         self.show_busy()
         self._file_db = self._get_file_db()
@@ -427,6 +444,7 @@ class FileTreeView(tlview.TreeView, ws_actions.AGandUIManager, ws_event.Listener
         sel = utils.file_list_to_string(self.get_selected_filepaths())
         clipboard.set_text(sel)
     def get_filepaths_in_dir(self, dirname, show_hidden=True, recursive=True):
+        # TODO: fix get_filepaths_in_dir() -- use db NOT view
         subdirs, files = self._file_db.dir_contents(dirname, show_hidden=show_hidden)
         filepaths = [os.path.join(dirname, fdata.name) for fdata in files]
         if recursive:

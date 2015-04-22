@@ -15,7 +15,7 @@
 
 import gtk
 
-from scm_test_tree_pkg import dialogue
+from . import dialogue
 
 try:
     import vte

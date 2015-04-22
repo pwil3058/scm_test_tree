@@ -23,7 +23,7 @@ COUNT_FILE = ".scmtt_modify_count"
 def create_test_tree(base_dir_name="", gui_calling=False):
     '''Execute the "create" sub command using the supplied args'''
     if gui_calling:
-        from scm_test_tree_pkg import cmd_result
+        from . import cmd_result
     if base_dir_name:
         if not os.path.exists(base_dir_name):
             try:
@@ -90,7 +90,7 @@ def create_test_tree(base_dir_name="", gui_calling=False):
 def modify_files(filepath_list, add_tws=False, no_newline=False, gui_calling=False):
     '''Execute the "modify" sub command using the supplied args'''
     if gui_calling:
-        from scm_test_tree_pkg import cmd_result
+        from . import cmd_result
     try:
         modno = int(open(COUNT_FILE, 'r').read()) + 1
         open(COUNT_FILE, 'w').write("{0}".format(modno))
@@ -156,19 +156,19 @@ def get_test_tree_root(fdir=None):
     return None
 
 def init(start_dir=None):
-    from scm_test_tree_pkg import terminal
-    from scm_test_tree_pkg import ws_event
-    from scm_test_tree_pkg import cmd_result
-    from scm_test_tree_pkg import config_data
-    from scm_test_tree_pkg import config
-    from scm_test_tree_pkg import recollect
+    from . import terminal
+    from . import ws_event
+    from . import cmd_result
+    from . import config_data
+    from . import config
+    from . import recollect
     global TERM
     global in_valid_test_gnd
     if terminal.AVAILABLE:
         TERM = terminal.Terminal()
     base_dir = get_test_tree_root(start_dir)
     if base_dir is not None:
-        from scm_test_tree_pkg import config
+        from . import config
         os.chdir(base_dir)
         TERM.set_cwd(base_dir)
         config.TGndPathTable.append_saved_wd(base_dir)
@@ -180,16 +180,16 @@ def init(start_dir=None):
     return cmd_result.Result(cmd_result.OK, "", "")
 
 def close():
-    from scm_test_tree_pkg import cmd_result
+    from . import cmd_result
     return cmd_result.Result(cmd_result.OK, "", "")
 
 def chdir(newdir=None):
-    from scm_test_tree_pkg import terminal
-    from scm_test_tree_pkg import ws_event
-    from scm_test_tree_pkg import cmd_result
-    from scm_test_tree_pkg import recollect
-    from scm_test_tree_pkg import config_data
-    from scm_test_tree_pkg import utils
+    from . import terminal
+    from . import ws_event
+    from . import cmd_result
+    from . import recollect
+    from . import config_data
+    from . import utils
     global in_valid_test_gnd
     old_wd = os.getcwd()
     retval = cmd_result.Result(cmd_result.OK, "", "")
@@ -203,7 +203,7 @@ def chdir(newdir=None):
             retval = cmd_result.Result(cmd_result.ERROR, "", '%s: "%s" :%s' % (ecode, newdir, emsg))
     base_dir = get_test_tree_root()
     if base_dir is not None:
-        from scm_test_tree_pkg import config
+        from . import config
         os.chdir(base_dir)
         TERM.set_cwd(base_dir)
         config.TGndPathTable.append_saved_wd(base_dir)

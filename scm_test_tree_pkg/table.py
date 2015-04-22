@@ -20,13 +20,13 @@ them from templates and allow easier access to named contents.
 
 import gtk
 
-from scm_test_tree_pkg import gutils
-from scm_test_tree_pkg import actions
-from scm_test_tree_pkg import ws_actions
-from scm_test_tree_pkg import ws_event
-from scm_test_tree_pkg import tlview
-from scm_test_tree_pkg import icons
-from scm_test_tree_pkg import dialogue
+from . import gutils
+from . import actions
+from . import ws_actions
+from . import ws_event
+from . import tlview
+from . import icons
+from . import dialogue
 
 ALWAYS_ON = 'table_always_on'
 MODIFIED = 'table_modified'

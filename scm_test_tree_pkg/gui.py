@@ -3,18 +3,18 @@ import os
 
 import gtk
 
-from scm_test_tree_pkg import config_data
-from scm_test_tree_pkg import config
-from scm_test_tree_pkg import utils
-from scm_test_tree_pkg import ifce
-from scm_test_tree_pkg import dialogue
-from scm_test_tree_pkg import actions
-from scm_test_tree_pkg import ws_actions
-from scm_test_tree_pkg import ws_event
-from scm_test_tree_pkg import recollect
-from scm_test_tree_pkg import icons
-from scm_test_tree_pkg import file_tree
-from scm_test_tree_pkg import cmd_result
+from . import config_data
+from . import config
+from . import utils
+from . import ifce
+from . import dialogue
+from . import actions
+from . import ws_actions
+from . import ws_event
+from . import recollect
+from . import icons
+from . import file_tree
+from . import cmd_result
 
 class MainWindow(gtk.Window, dialogue.BusyIndicator, ws_actions.AGandUIManager):
     UI_DESCR = \

@@ -17,10 +17,10 @@ import os
 
 import gtk
 
-from scm_test_tree_pkg import cmd_result
-from scm_test_tree_pkg import config_data
+from . import cmd_result
+from . import config_data
 
-from scm_test_tree_pkg import gutils
+from . import gutils
 
 main_window = None
 

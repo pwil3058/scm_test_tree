@@ -14,21 +14,22 @@
 ### Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
 
 import os
-import gobject
-import gtk
 import fnmatch
 import collections
 
-from scm_test_tree_pkg import config_data
-from scm_test_tree_pkg import utils
+import gtk
+import gobject
 
-from scm_test_tree_pkg import dialogue
-from scm_test_tree_pkg import gutils
-from scm_test_tree_pkg import tlview
-from scm_test_tree_pkg import table
-from scm_test_tree_pkg import actions
-from scm_test_tree_pkg import ifce
-from scm_test_tree_pkg import ws_event
+from . import config_data
+from . import utils
+
+from . import dialogue
+from . import gutils
+from . import tlview
+from . import table
+from . import actions
+from . import ifce
+from . import ws_event
 
 _KEYVAL_ESCAPE = gtk.gdk.keyval_from_name('Escape')
 

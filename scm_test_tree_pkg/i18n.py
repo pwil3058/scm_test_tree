@@ -17,7 +17,7 @@ import os, sys
 import locale
 import gettext
 
-from scm_test_tree_pkg.config_data import APP_NAME
+from .config_data import APP_NAME
 
 # find the locale directory
 # first look in the source directory (so that we can run uninstalled)

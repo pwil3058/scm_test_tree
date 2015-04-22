@@ -16,10 +16,10 @@
 import os
 import shutil
 
-from scm_test_tree_pkg import fsdb
-from scm_test_tree_pkg import cmd_result
-from scm_test_tree_pkg import ws_event
-from scm_test_tree_pkg import urlops
+from . import fsdb
+from . import cmd_result
+from . import ws_event
+from . import urlops
 
 HOME = os.path.expanduser("~")
 
