@@ -33,13 +33,13 @@ def get_in_tgnd_condns():
 def _update_class_indep_cwd_cb(_arg=None):
     actions.CLASS_INDEP_AGS.update_condns(get_in_tgnd_condns())
 
-ws_event.add_notification_cb(ws_event.CHANGE_WD, _update_class_indep_cwd_cb)
+ws_event.add_notification_cb(ifce.E_CHANGE_WD, _update_class_indep_cwd_cb)
 
 class AGandUIManager(actions.CAGandUIManager, ws_event.Listener):
     def __init__(self, selection=None, popup=None):
         actions.CAGandUIManager.__init__(self, selection=selection, popup=popup)
         ws_event.Listener.__init__(self)
-        self.add_notification_cb(ws_event.CHANGE_WD, self.cwd_condns_change_cb)
+        self.add_notification_cb(ifce.E_CHANGE_WD, self.cwd_condns_change_cb)
         self.init_action_states()
     def cwd_condns_change_cb(self, _arg=None):
         self.action_groups.update_condns(get_in_tgnd_condns())

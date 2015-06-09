@@ -18,14 +18,18 @@ import collections
 import os
 import datetime
 
-from .. import cmd_result
+from ..cmd_result import CmdResult
 from .. import config_data
 
 from . import terminal
 from . import ws_event
 from . import recollect
 
+E_CHANGE_WD = ws_event.new_event_flag()
+
 in_valid_test_gnd = False
+
+CURDIR = os.getcwd()
 
 TERM = None
 log = False
@@ -47,6 +51,7 @@ def get_test_tree_root(fdir=None):
 
 def init(start_dir=None):
     global TERM
+    global CURDIR
     global in_valid_test_gnd
     if terminal.AVAILABLE:
         TERM = terminal.Terminal()
@@ -57,20 +62,22 @@ def init(start_dir=None):
         TERM.set_cwd(base_dir)
         config.TGndPathTable.append_saved_wd(base_dir)
         in_valid_test_gnd = True
-        recollect.set(config_data.APP_NAME, "last_wd", base_dir)
+        recollect.set(config_data.APP_NAME, "last_pgnd", base_dir)
     else:
         in_valid_test_gnd = False
-    ws_event.notify_events(ws_event.CHANGE_WD)
-    return cmd_result.Result(cmd_result.OK, "", "")
+    CURDIR = os.getcwd()
+    ws_event.notify_events(E_CHANGE_WD)
+    return CmdResult.ok()
 
 def close():
-    return cmd_result.Result(cmd_result.OK, "", "")
+    return CmdResult.ok()
 
 def chdir(newdir=None):
     from .. import utils
+    global CURDIR
     global in_valid_test_gnd
     old_wd = os.getcwd()
-    retval = cmd_result.Result(cmd_result.OK, "", "")
+    retval = CmdResult.ok()
     if newdir:
         try:
             os.chdir(newdir)
@@ -78,7 +85,7 @@ def chdir(newdir=None):
             import errno
             ecode = errno.errorcode[err.errno]
             emsg = err.strerror
-            retval = cmd_result.Result(cmd_result.ERROR, "", '%s: "%s" :%s' % (ecode, newdir, emsg))
+            retval = CmdResult.error(stderr='%s: "%s" :%s' % (ecode, newdir, emsg))
     base_dir = get_test_tree_root()
     if base_dir is not None:
         from . import config
@@ -86,12 +93,23 @@ def chdir(newdir=None):
         TERM.set_cwd(base_dir)
         config.TGndPathTable.append_saved_wd(base_dir)
         in_valid_test_gnd = True
-        recollect.set(config_data.APP_NAME, "last_wd", base_dir)
+        recollect.set(config_data.APP_NAME, "last_pgnd", base_dir)
     else:
         in_valid_test_gnd = False
-    new_wd = os.getcwd()
-    if not utils.samefile(new_wd, old_wd):
+    curdir = os.getcwd()
+    if not utils.samefile(curdir, CURDIR):
         if TERM:
             TERM.set_cwd(new_wd)
-    ws_event.notify_events(ws_event.CHANGE_WD)
+    CURDIR = curdir
+    ws_event.notify_events(E_CHANGE_WD)
     return retval
+
+def check_interfaces(args):
+    from .. import utils
+    global CURDIR
+    curdir = os.getcwd()
+    if not utils.samefile(CURDIR, curdir):
+        args["new_wd"] = curdir
+        CURDIR = curdir
+        return E_CHANGE_WD # don't send ifce changes and wd change at the same time
+    return 0

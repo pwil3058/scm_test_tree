@@ -105,13 +105,13 @@ def gui_cmd(args):
     from scm_test_tree_pkg.gui import ifce
     from scm_test_tree_pkg import config_data
     try:
-        dialogue.report_any_problems(ifce.init(recollect.get(config_data.APP_NAME, "last_wd")))
+        dialogue.report_any_problems(ifce.init(recollect.get(config_data.APP_NAME, "last_pgnd")))
         gui.MainWindow().show()
         gtk.main()
     except (SystemExit, KeyboardInterrupt):
         pass
     except Exception:
-        dialogue.report_exception(sys.exc_info())
+        dialogue.report_exception_as_error(sys.exc_info())
         return 3
     finally:
         ifce.close()

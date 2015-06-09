@@ -1,4 +1,4 @@
-### Copyright (C) 2015 Peter Williams <pwil3058@gmail.com>
+### Copyright (C) 2010-2015 Peter Williams <pwil3058@gmail.com>
 ###
 ### This program is free software; you can redistribute it and/or modify
 ### it under the terms of the GNU General Public License as published by
@@ -24,9 +24,9 @@ try:
 except ImportError:
     import ConfigParser as configparser
 
-from .. import config_data
+from ..config_data import APP_NAME, CONFIG_DIR_NAME
 
-_RECOLLECTIONS_PATH = os.path.join(config_data.CONFIG_DIR_NAME, 'guistate.mem')
+_RECOLLECTIONS_PATH = os.path.join(CONFIG_DIR_NAME, "guistate.mem")
 
 RECOLLECTIONS = configparser.SafeConfigParser()
 
@@ -86,9 +86,12 @@ def set(section, oname, val):
     RECOLLECTIONS.set(section, oname, val)
     RECOLLECTIONS.write(open(_RECOLLECTIONS_PATH, 'w'))
 
-define(config_data.APP_NAME, 'last_wd', Defn(str, ""))
+define(APP_NAME, "last_pgnd", Defn(str, ""))
 
 define("main_window", "last_geometry", Defn(str, ""))
 define("main_window", "vpaned_position", Defn(int, -1))
+define("main_window", "hpaned_position", Defn(int, -1))
+
+define("export", "last_directory", Defn(str, ""))
 
 load_recollections()

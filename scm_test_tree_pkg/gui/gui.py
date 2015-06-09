@@ -69,7 +69,7 @@ class MainWindow(gtk.Window, dialogue.BusyIndicator, ws_actions.AGandUIManager):
         self.add(vbox)
         self.show_all()
         self._update_title()
-        self.add_notification_cb(ws_event.CHANGE_WD, self._reset_after_cd)
+        self.add_notification_cb(ifce.E_CHANGE_WD, self._reset_after_cd)
     def populate_action_groups(self):
         actions.CLASS_INDEP_AGS[actions.AC_DONT_CARE].add_actions(
             [
