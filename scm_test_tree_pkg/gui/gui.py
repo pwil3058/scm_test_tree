@@ -6,6 +6,7 @@ import gtk
 from .. import config_data
 from .. import utils
 from .. import cmd_result
+from .. import cmd_ifce
 
 from . import ifce
 from . import config
@@ -102,7 +103,7 @@ class MainWindow(gtk.Window, dialogue.BusyIndicator, ws_actions.AGandUIManager):
     def _new_tgnd_acb(self, _action):
         dirname = dialogue.ask_dir_name(_("{0}: Browse for Directory").format(config_data.APP_NAME), existing=True, parent=self)
         if dirname:
-            result = ifce.create_test_tree(dirname, gui_calling=True)
+            result = cmd_ifce.create_test_tree(dirname, gui_calling=True)
             if cmd_result.is_less_than_error(result):
                 ifce.chdir(dirname)
             dialogue.report_any_problems(result)

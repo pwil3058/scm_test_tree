@@ -24,6 +24,7 @@ import pango
 from .. import utils
 from .. import cmd_result
 from .. import fsdb
+from .. import cmd_ifce
 
 from . import ifce
 from . import tlview
@@ -466,7 +467,7 @@ class FileTreeView(tlview.TreeView, ws_actions.AGandUIManager, ws_event.Listener
                 expanded_list.append(filepath)
         return expanded_list
     def modify_selected_files_acb(self, _menu_item):
-        dialogue.report_any_problems(ifce.modify_files(self.get_selected_filepaths(), gui_calling=True))
+        dialogue.report_any_problems(cmd_ifce.modify_files(self.get_selected_filepaths(), gui_calling=True))
     def create_new_file(self, new_file_name, open_for_edit=False):
         self.show_busy()
         result = utils.create_file(new_file_name)

@@ -54,7 +54,6 @@ def create_test_tree(base_dir_name="", gui_calling=False):
                     sys.stderr.write(emsg)
         else:
             dname = ""
-        print dindex, dname
         for sdindex in range(6):
             if sdindex:
                 if not dindex:
@@ -70,9 +69,7 @@ def create_test_tree(base_dir_name="", gui_calling=False):
                         sys.stderr.write(emsg)
             else:
                 sdname = ''
-            print sdindex, sdname
             for findex in range(1, 6):
-                print findex
                 for (fn_template, c_template) in [("file{0}", _("{0}: is a text file.\n")), ("binary{0}", _("{0}:\000is a binary file.\n")), (".hidden{0}", _("{0}:is a hidden file.\n"))]:
                     fpath = os.path.join(dname, sdname, fn_template.format(findex))
                     try:
