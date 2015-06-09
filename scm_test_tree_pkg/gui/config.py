@@ -22,8 +22,8 @@ import gobject
 
 from .. import config_data
 from .. import utils
-from .. import ifce
 
+from . import ifce
 from . import dialogue
 from . import gutils
 from . import tlview

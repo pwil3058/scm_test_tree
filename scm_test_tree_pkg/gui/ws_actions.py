@@ -21,8 +21,7 @@ import collections
 
 import gtk
 
-from .. import ifce
-
+from . import ifce
 from . import actions
 from . import ws_event
 

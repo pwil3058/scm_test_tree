@@ -6,8 +6,8 @@ import gtk
 from .. import config_data
 from .. import utils
 from .. import cmd_result
-from .. import ifce
 
+from . import ifce
 from . import config
 from . import dialogue
 from . import actions
