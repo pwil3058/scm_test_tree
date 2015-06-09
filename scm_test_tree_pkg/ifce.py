@@ -156,19 +156,18 @@ def get_test_tree_root(fdir=None):
     return None
 
 def init(start_dir=None):
-    from . import terminal
-    from . import ws_event
     from . import cmd_result
     from . import config_data
-    from . import config
-    from . import recollect
+    from .gui import terminal
+    from .gui import ws_event
+    from .gui import recollect
     global TERM
     global in_valid_test_gnd
     if terminal.AVAILABLE:
         TERM = terminal.Terminal()
     base_dir = get_test_tree_root(start_dir)
     if base_dir is not None:
-        from . import config
+        from .gui import config
         os.chdir(base_dir)
         TERM.set_cwd(base_dir)
         config.TGndPathTable.append_saved_wd(base_dir)
@@ -184,12 +183,12 @@ def close():
     return cmd_result.Result(cmd_result.OK, "", "")
 
 def chdir(newdir=None):
-    from . import terminal
-    from . import ws_event
     from . import cmd_result
-    from . import recollect
     from . import config_data
     from . import utils
+    from .gui import terminal
+    from .gui import ws_event
+    from .gui import recollect
     global in_valid_test_gnd
     old_wd = os.getcwd()
     retval = cmd_result.Result(cmd_result.OK, "", "")

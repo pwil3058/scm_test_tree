@@ -21,9 +21,10 @@ import collections
 
 import gtk
 
+from .. import ifce
+
 from . import actions
 from . import ws_event
-from . import ifce
 
 AC_NOT_IN_TGND, AC_IN_TGND, AC_IN_TGND_MASK = actions.ActionCondns.new_flags_and_mask(2)
 

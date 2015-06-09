@@ -99,9 +99,9 @@ GUI_PARSER = SUB_CMD_PARSER.add_parser(
 def gui_cmd(args):
     '''Execute the "gui" sub command using the supplied args'''
     import gtk
-    from scm_test_tree_pkg import dialogue
-    from scm_test_tree_pkg import gui
-    from scm_test_tree_pkg import recollect
+    from scm_test_tree_pkg.gui import dialogue
+    from scm_test_tree_pkg.gui import gui
+    from scm_test_tree_pkg.gui import recollect
     from scm_test_tree_pkg import config_data
     try:
         dialogue.report_any_problems(ifce.init(recollect.get(config_data.APP_NAME, "last_wd")))

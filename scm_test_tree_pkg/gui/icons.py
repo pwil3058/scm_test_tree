@@ -20,7 +20,7 @@ import collections
 import gtk
 import gtk.gdk
 
-from . import config_data
+from .. import config_data
 
 # find the icons directory
 # first look in the source directory (so that we can run uninstalled)

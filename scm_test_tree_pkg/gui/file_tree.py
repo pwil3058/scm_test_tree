@@ -21,13 +21,13 @@ import gtk
 import gobject
 import pango
 
-from . import utils
-from . import cmd_result
-from . import fsdb
+from .. import utils
+from .. import cmd_result
+from .. import fsdb
+from .. import ifce
 
 from . import tlview
 from . import gutils
-from . import ifce
 from . import actions
 from . import ws_actions
 from . import dialogue

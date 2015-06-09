@@ -17,8 +17,8 @@ import os
 
 import gtk
 
-from . import cmd_result
-from . import config_data
+from .. import cmd_result
+from .. import config_data
 
 from . import gutils
 

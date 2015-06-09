@@ -3,10 +3,12 @@ import os
 
 import gtk
 
-from . import config_data
+from .. import config_data
+from .. import utils
+from .. import cmd_result
+from .. import ifce
+
 from . import config
-from . import utils
-from . import ifce
 from . import dialogue
 from . import actions
 from . import ws_actions
@@ -14,7 +16,6 @@ from . import ws_event
 from . import recollect
 from . import icons
 from . import file_tree
-from . import cmd_result
 
 class MainWindow(gtk.Window, dialogue.BusyIndicator, ws_actions.AGandUIManager):
     UI_DESCR = \

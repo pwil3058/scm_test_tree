@@ -18,8 +18,9 @@ import shutil
 
 from . import fsdb
 from . import cmd_result
-from . import ws_event
 from . import urlops
+
+from .gui import ws_event
 
 HOME = os.path.expanduser("~")
 
