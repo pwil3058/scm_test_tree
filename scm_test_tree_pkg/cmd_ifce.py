@@ -19,6 +19,7 @@ import os
 import datetime
 
 COUNT_FILE = ".scmtt_modify_count"
+IGNORES = COUNT_FILE + "\n.hgignore\n.gitignore\n.darning.dbd\n"
 
 def create_test_tree(base_dir_name="", gui_calling=False):
     '''Execute the "create" sub command using the supplied args'''
@@ -40,6 +41,9 @@ def create_test_tree(base_dir_name="", gui_calling=False):
     except IOError as edata:
         emsg = "{0}: {1}".format(edata.filename, edata.strerror)
         return CmdResult.error(sterr=emsg) if gui_calling else emsg
+    # Add some ignore files
+    for ignore_file_path in [".hgignore", ".gitignore"]:
+        open(os.path.join(base_dir_name, ignore_file_path), 'w').write(IGNORES)
     combined_emsgs = ""
     for dindex in range(6):
         if dindex:

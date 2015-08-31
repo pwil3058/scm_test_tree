@@ -5,7 +5,6 @@ import gtk
 
 from .. import config_data
 from .. import utils
-from .. import cmd_result
 from .. import cmd_ifce
 
 from . import ifce
@@ -104,7 +103,7 @@ class MainWindow(gtk.Window, dialogue.BusyIndicator, ws_actions.AGandUIManager):
         dirname = dialogue.ask_dir_name(_("{0}: Browse for Directory").format(config_data.APP_NAME), existing=True, parent=self)
         if dirname:
             result = cmd_ifce.create_test_tree(dirname, gui_calling=True)
-            if cmd_result.is_less_than_error(result):
+            if result.is_less_than_error:
                 ifce.chdir(dirname)
             dialogue.report_any_problems(result)
     def _configure_event_cb(self, widget, event):
