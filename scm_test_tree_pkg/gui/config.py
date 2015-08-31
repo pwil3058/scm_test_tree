@@ -1,4 +1,4 @@
-### Copyright (C) 2015 Peter Williams <pwil3058@gmail.com>
+### Copyright (C) 2005-2015 Peter Williams <pwil3058@gmail.com>
 ###
 ### This program is free software; you can redistribute it and/or modify
 ### it under the terms of the GNU General Public License as published by
@@ -17,21 +17,21 @@ import os
 import fnmatch
 import collections
 
-import gtk
 import gobject
+import gtk
 
 from .. import config_data
 from .. import utils
 
-from . import ifce
 from . import dialogue
 from . import gutils
 from . import tlview
 from . import table
 from . import actions
+from . import ifce
 from . import ws_event
 
-_KEYVAL_ESCAPE = gtk.gdk.keyval_from_name('Escape')
+_KEYVAL_ESCAPE = gtk.gdk.keyval_from_name("Escape")
 
 class AliasPathTable(table.Table):
     SAVED_FILE_NAME = None
@@ -48,7 +48,7 @@ class AliasPathTable(table.Table):
     def _abbrev_path(path):
         return utils.path_rel_home(path)
     @classmethod
-    def append_saved_wd(cls, path, alias=None):
+    def append_saved_path(cls, path, alias=None):
         if cls._extant_path(path):
             content = cls._fetch_contents()
             found = modified = False
@@ -72,7 +72,7 @@ class AliasPathTable(table.Table):
         extant_ap_list = []
         if not os.path.exists(cls.SAVED_FILE_NAME):
             return []
-        fobj = open(cls.SAVED_FILE_NAME, 'r')
+        fobj = open(cls.SAVED_FILE_NAME, "r")
         lines = fobj.readlines()
         fobj.close()
         for line in lines:
@@ -86,27 +86,27 @@ class AliasPathTable(table.Table):
         return extant_ap_list
     @classmethod
     def _write_list_to_file(cls, ap_list):
-        fobj = open(cls.SAVED_FILE_NAME, 'w')
+        fobj = open(cls.SAVED_FILE_NAME, "w")
         for alpth in ap_list:
             fobj.write(os.pathsep.join(alpth))
             fobj.write(os.linesep)
         fobj.close()
     class View(table.Table.View):
         class Model(table.Table.View.Model):
-            Row = collections.namedtuple('Row', ['Alias', 'Path'])
+            Row = collections.namedtuple("Row", ["Alias", "Path"])
             types = Row(Alias=gobject.TYPE_STRING, Path=gobject.TYPE_STRING)
         specification = tlview.ViewSpec(
             properties={
-                'enable-grid-lines' : False,
-                'reorderable' : False,
-                'rules_hint' : False,
-                'headers-visible' : True,
+                "enable-grid-lines" : False,
+                "reorderable" : False,
+                "rules_hint" : False,
+                "headers-visible" : True,
             },
             selection_mode=gtk.SELECTION_SINGLE,
             columns=[
                 tlview.ColumnSpec(
-                    title=_('Alias'),
-                    properties={'expand': False, 'resizable' : True},
+                    title=_("Alias"),
+                    properties={"expand": False, "resizable" : True},
                     cells=[
                         tlview.CellSpec(
                             cell_renderer_spec=tlview.CellRendererSpec(
@@ -114,15 +114,15 @@ class AliasPathTable(table.Table):
                                 expand=False,
                                 start=True
                             ),
-                            properties={'editable' : True},
+                            properties={"editable" : True},
                             cell_data_function_spec=None,
-                            attributes = {'text' : Model.col_index('Alias')}
+                            attributes = {"text" : Model.col_index("Alias")}
                         ),
                     ],
                 ),
                 tlview.ColumnSpec(
-                    title=_('Path'),
-                    properties={'expand': False, 'resizable' : True},
+                    title=_("Path"),
+                    properties={"expand": False, "resizable" : True},
                     cells=[
                         tlview.CellSpec(
                             cell_renderer_spec=tlview.CellRendererSpec(
@@ -130,9 +130,9 @@ class AliasPathTable(table.Table):
                                 expand=False,
                                 start=True
                             ),
-                            properties={'editable' : False},
+                            properties={"editable" : False},
                             cell_data_function_spec=None,
-                            attributes = {'text' : Model.col_index('Path')}
+                            attributes = {"text" : Model.col_index("Path")}
                         ),
                     ],
                 ),
@@ -142,15 +142,15 @@ class AliasPathTable(table.Table):
         table.Table.__init__(self, size_req=(480, 160))
         self.view.register_modification_callback(self.save_to_file)
         self.connect("key_press_event", self._key_press_cb)
-        self.connect('button_press_event', self._handle_button_press_cb)
+        self.connect("button_press_event", self._handle_button_press_cb)
         self.set_contents()
     def add_ap(self, path, alias=""):
         if self._extant_path(path):
             model_iter = self.model.get_iter_first()
             while model_iter:
-                if self._same_paths(self.model.get_value_named(model_iter, 'Path'), path):
+                if self._same_paths(self.model.get_value_named(model_iter, "Path"), path):
                     if alias:
-                        self.model.set_value_named(model_iter, 'Alias', alias)
+                        self.model.set_value_named(model_iter, "Alias", alias)
                     return
                 model_iter = self.model.iter_next(model_iter)
             if not alias:
@@ -158,11 +158,11 @@ class AliasPathTable(table.Table):
             data = self.model.Row(Path=self._abbrev_path(path), Alias=alias)
             self.model.append(data)
             self.save_to_file()
-    def save_to_file(self, _arg=None):
+    def save_to_file(self, *args,**kwargs):
         ap_list = self.get_contents()
         self._write_list_to_file(ap_list)
     def get_selected_ap(self):
-        data = self.get_selected_data_by_label(['Path', 'Alias'])
+        data = self.get_selected_data_by_label(["Path", "Alias"])
         if not data:
             return False
         return data[0]
@@ -184,14 +184,15 @@ class TGndPathTable(AliasPathTable):
     SAVED_FILE_NAME = SAVED_TGND_FILE_NAME
 
 class PathSelectDialog(dialogue.Dialog):
-    def __init__(self, create_table, label, parent=None):
+    PATH_TABLE = AliasPathTable
+    def __init__(self, label, suggestion=None, parent=None):
         dialogue.Dialog.__init__(self, title=_("{0}: Select {1}").format(config_data.APP_NAME, label), parent=parent,
                                  flags=gtk.DIALOG_MODAL|gtk.DIALOG_DESTROY_WITH_PARENT,
                                  buttons=(gtk.STOCK_CANCEL, gtk.RESPONSE_CANCEL,
                                           gtk.STOCK_OK, gtk.RESPONSE_OK)
                                 )
         hbox = gtk.HBox()
-        self.ap_table = create_table()
+        self.ap_table = self.PATH_TABLE()
         hbox.pack_start(self.ap_table)
         self.vbox.pack_start(hbox)
         hbox = gtk.HBox()
@@ -199,8 +200,10 @@ class PathSelectDialog(dialogue.Dialog):
         self._path = gutils.MutableComboBoxEntry()
         self._path.child.set_width_chars(32)
         self._path.child.connect("activate", self._path_cb)
+        if suggestion:
+            self._path.set_text(suggestion)
         hbox.pack_start(self._path, expand=True, fill=True)
-        self._browse_button = gtk.Button(label=_('_Browse'))
+        self._browse_button = gtk.Button(label=_("_Browse"))
         self._browse_button.connect("clicked", self._browse_cb)
         hbox.pack_start(self._browse_button, expand=False, fill=False)
         self.vbox.pack_start(hbox, expand=False, fill=False)

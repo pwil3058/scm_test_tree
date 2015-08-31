@@ -93,5 +93,6 @@ define("main_window", "vpaned_position", Defn(int, -1))
 define("main_window", "hpaned_position", Defn(int, -1))
 
 define("export", "last_directory", Defn(str, ""))
+define("import", "last_directory", Defn(str, ""))
 
 load_recollections()

@@ -86,7 +86,7 @@ class MainWindow(gtk.Window, dialogue.BusyIndicator, ws_actions.AGandUIManager):
         gtk.main_quit()
     def _update_title(self):
         self.set_title(config_data.APP_NAME + ": {0}".format(utils.path_rel_home(os.getcwd())))
-    def _reset_after_cd(self, _arg=None):
+    def _reset_after_cd(self, *args, **kwargs):
         self.show_busy()
         self._update_title()
         self.unshow_busy()

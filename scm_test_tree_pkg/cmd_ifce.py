@@ -23,23 +23,23 @@ COUNT_FILE = ".scmtt_modify_count"
 def create_test_tree(base_dir_name="", gui_calling=False):
     '''Execute the "create" sub command using the supplied args'''
     if gui_calling:
-        from . import cmd_result
+        from .cmd_result import CmdResult
     if base_dir_name:
         if not os.path.exists(base_dir_name):
             try:
                 os.makedirs(base_dir_name)
             except os.error as edata:
                 emsg = "{0}: {1}".format(edata.filename, edata.strerror)
-                return cmd_result.Result(cmd_result.ERROR, "", emsg) if gui_calling else emsg
+                return CmdResult.error(sterr=emsg) if gui_calling else emsg
         elif not os.path.isdir(base_dir_name):
             emsg = _("{0}: is NOT a directory. Aborting.").format(base_dir_name)
-            return cmd_result.Result(cmd_result.ERROR, "", emsg) if gui_calling else emsg
+            return CmdResult.error(sterr=emsg) if gui_calling else emsg
     # Do this here to catch base directory permission problems early
     try:
         open(os.path.join(base_dir_name, COUNT_FILE), 'w').write("0")
     except IOError as edata:
         emsg = "{0}: {1}".format(edata.filename, edata.strerror)
-        return cmd_result.Result(cmd_result.ERROR, "", emsg) if gui_calling else emsg
+        return CmdResult.error(sterr=emsg) if gui_calling else emsg
     combined_emsgs = ""
     for dindex in range(6):
         if dindex:
@@ -81,20 +81,20 @@ def create_test_tree(base_dir_name="", gui_calling=False):
                         else:
                             sys.stderr.write(emsg)
     if gui_calling:
-        return cmd_result.Result(cmd_result.WARNING if combined_emsgs else cmd_result.OK, "", combined_emsgs)
+        return CmdResult.warning(stderr=combined_emsgs) if combined_emsgs else CmdResult.ok()
     return 0
 
 def modify_files(filepath_list, add_tws=False, no_newline=False, gui_calling=False):
     '''Execute the "modify" sub command using the supplied args'''
     if gui_calling:
-        from . import cmd_result
+        from .cmd_result import CmdResult
     try:
         modno = int(open(COUNT_FILE, 'r').read()) + 1
         open(COUNT_FILE, 'w').write("{0}".format(modno))
     except IOError:
         emsg = _('{0}: is NOT a valid test directory. Aborting.\n').format(os.getcwd())
         if gui_calling:
-            return cmd_result.Result(cmd_result.ERROR, "", emsg)
+            return CmdResult.error(sterr=emsg)
         else:
             return emsg
     template = 'tws \ntws\t\n' if add_tws else ''
@@ -130,5 +130,5 @@ def modify_files(filepath_list, add_tws=False, no_newline=False, gui_calling=Fal
             else:
                 sys.stderr.write(emsg)
     if gui_calling:
-        return cmd_result.Result(cmd_result.WARNING if combined_emsgs else cmd_result.OK, "", combined_emsgs)
+        return CmdResult.warning(stderr=combined_emsgs) if combined_emsgs else CmdResult.ok()
     return 0

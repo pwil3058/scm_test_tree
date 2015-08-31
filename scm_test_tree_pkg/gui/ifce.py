@@ -1,4 +1,4 @@
-### Copyright (C) 2015 Peter Williams <pwil3058@gmail.com>
+### Copyright (C) 2007-2015 Peter Williams <pwil3058@gmail.com>
 ###
 ### This program is free software; you can redistribute it and/or modify
 ### it under the terms of the GNU General Public License as published by
@@ -60,13 +60,13 @@ def init(start_dir=None):
         from . import config
         os.chdir(base_dir)
         TERM.set_cwd(base_dir)
-        config.TGndPathTable.append_saved_wd(base_dir)
+        config.TGndPathTable.append_saved_path(base_dir)
         in_valid_test_gnd = True
         recollect.set(config_data.APP_NAME, "last_pgnd", base_dir)
     else:
         in_valid_test_gnd = False
     CURDIR = os.getcwd()
-    ws_event.notify_events(E_CHANGE_WD)
+    ws_event.notify_events(E_CHANGE_WD, new_wd=CURDIR)
     return CmdResult.ok()
 
 def close():
@@ -91,7 +91,7 @@ def chdir(newdir=None):
         from . import config
         os.chdir(base_dir)
         TERM.set_cwd(base_dir)
-        config.TGndPathTable.append_saved_wd(base_dir)
+        config.TGndPathTable.append_saved_path(base_dir)
         in_valid_test_gnd = True
         recollect.set(config_data.APP_NAME, "last_pgnd", base_dir)
     else:
@@ -99,9 +99,9 @@ def chdir(newdir=None):
     curdir = os.getcwd()
     if not utils.samefile(curdir, CURDIR):
         if TERM:
-            TERM.set_cwd(new_wd)
+            TERM.set_cwd(curdir)
     CURDIR = curdir
-    ws_event.notify_events(E_CHANGE_WD)
+    ws_event.notify_events(E_CHANGE_WD, new_wd=CURDIR)
     return retval
 
 def check_interfaces(args):

@@ -1,4 +1,4 @@
-### Copyright (C) 2005 Peter Williams <pwil3058@gmail.com>
+### Copyright (C) 2005-2015 Peter Williams <pwil3058@gmail.com>
 ###
 ### This program is free software; you can redistribute it and/or modify
 ### it under the terms of the GNU General Public License as published by
@@ -174,13 +174,9 @@ class SelectFromListDialog(Dialog):
     def make_selection(self):
         res = self.run()
         index = self.cbox.get_active()
-        is_ok = index > 0
-        if is_ok:
-            text = self.cbox.get_model()[index][0]
-        else:
-            text = ''
+        seln = self.cbox.get_model()[index][0] if index > 0 else None
         self.destroy()
-        return (is_ok, text)
+        return seln
 
 class QuestionDialog(Dialog):
     def __init__(self, title=None, parent=None, flags=0, buttons=None, question=""):
@@ -240,6 +236,11 @@ def _form_question(result, clarification):
         return '\n'.join(list(result[1:]) + [clarification])
     else:
         return '\n'.join(result[1:])
+
+def ask_discard_or_cancel(result, clarification=None, parent=None):
+    buttons = (gtk.STOCK_CANCEL, gtk.RESPONSE_CANCEL, _('_Discard'), Response.DISCARD)
+    question = _form_question(result, clarification)
+    return ask_question(question, parent, buttons)
 
 def ask_force_refresh_or_cancel(result, clarification=None, parent=None):
     buttons = (gtk.STOCK_CANCEL, gtk.RESPONSE_CANCEL)
@@ -322,6 +323,7 @@ def ask_rename_overwrite_or_cancel(result, clarification=None, parent=None):
     question = _form_question(result, clarification)
     return ask_question(question, parent, buttons)
 
+# TODO: rename ask_file_name() and ask_dir_name()
 def ask_file_name(prompt, suggestion=None, existing=True, parent=None):
     if existing:
         mode = gtk.FILE_CHOOSER_ACTION_OPEN
@@ -355,12 +357,9 @@ def ask_file_name(prompt, suggestion=None, existing=True, parent=None):
     return new_file_name
 
 def ask_dir_name(prompt, suggestion=None, existing=True, parent=None):
-    if existing:
-        mode = gtk.FILE_CHOOSER_ACTION_SELECT_FOLDER
-        if suggestion and not os.path.exists(suggestion):
-            suggestion = None
-    else:
-        mode = gtk.FILE_CHOOSER_ACTION_CREATE_FOLDER
+    mode = gtk.FILE_CHOOSER_ACTION_SELECT_FOLDER
+    if existing and suggestion and not os.path.exists(suggestion):
+        suggestion = None
     dialog = FileChooserDialog(prompt, parent, mode,
                                (gtk.STOCK_CANCEL, gtk.RESPONSE_CANCEL,
                                 gtk.STOCK_OK, gtk.RESPONSE_OK))
@@ -372,6 +371,10 @@ def ask_dir_name(prompt, suggestion=None, existing=True, parent=None):
             dirname = os.path.dirname(suggestion)
             if dirname:
                 dialog.set_current_folder(dirname)
+            else:
+                dialog.set_current_folder(os.getcwd())
+    else:
+        dialog.set_current_folder(os.getcwd())
     response = dialog.run()
     if response == gtk.RESPONSE_OK:
         new_dir_name = os.path.relpath(dialog.get_filename())
@@ -395,6 +398,8 @@ def ask_uri_name(prompt, suggestion=None, parent=None):
             dirname = os.path.dirname(suggestion)
             if dirname:
                 dialog.set_current_folder(dirname)
+    else:
+        dialog.set_current_folder(os.getcwd())
     response = dialog.run()
     if response == gtk.RESPONSE_OK:
         uri = os.path.relpath(dialog.get_uri())
