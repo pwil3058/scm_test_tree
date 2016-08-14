@@ -13,20 +13,23 @@
 ### along with this program; if not, write to the Free Software
 ### Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
 
+import os
 import sys
-import os.path
 import collections
 
-import gtk
-import gtk.gdk
+import gi
+gi.require_version("Gtk", "3.0")
+from gi.repository import Gtk
+from gi.repository import Gio
+from gi.repository import GdkPixbuf
 
-from .. import config_data
+from ..config_data import APP_NAME
 
 # find the icons directory
 # first look in the source directory (so that we can run uninstalled)
-_libdir = os.path.join(sys.path[0], 'pixmaps')
+_libdir = os.path.join(sys.path[0], "pixmaps")
 if not os.path.exists(_libdir) or not os.path.isdir(_libdir):
-    _TAILEND = os.path.join('share', 'pixmaps', config_data.APP_NAME)
+    _TAILEND = os.path.join("share", "pixmaps", APP_NAME)
     _prefix = sys.path[0]
     while _prefix:
         _libdir = os.path.join(_prefix, _TAILEND)
@@ -34,29 +37,38 @@ if not os.path.exists(_libdir) or not os.path.isdir(_libdir):
             break
         _prefix = os.path.dirname(_prefix)
 
-APP_ICON = config_data.APP_NAME
-APP_ICON_FILE = os.path.join(os.path.dirname(_libdir), APP_ICON + os.extsep + 'png')
+APP_ICON = APP_NAME
+APP_ICON_FILE = os.path.join(os.path.dirname(_libdir), APP_ICON + os.extsep + "png")
+APP_ICON_PIXBUF = GdkPixbuf.Pixbuf.new_from_file(APP_ICON_FILE)
 
 
-_FACTORY = gtk.IconFactory()
+_FACTORY = Gtk.IconFactory()
 _FACTORY.add_default()
+_FACTORY.add(APP_ICON, Gtk.IconSet(APP_ICON_PIXBUF))
+
+_PREFIX = APP_NAME + "_"
+
+def _png_file_name(item_name):
+    return os.path.join(_libdir, item_name[len(_PREFIX):] + os.extsep + 'png')
+
+def make_pixbuf(name):
+    return GdkPixbuf.Pixbuf.new_from_file(_png_file_name(name))
 
 StockAlias = collections.namedtuple("StockAlias", ["name", "alias", "text"])
 
 # Icons that are aliased to Gtk or other stock items
-STOCK_INSERT = config_data.APP_NAME + "_stock_insert"
-STOCK_RENAME = config_data.APP_NAME + "_stock_rename"
+STOCK_INSERT = _PREFIX + "stock_insert"
+STOCK_RENAME = _PREFIX + "stock_rename"
 
 # Icons that have to be designed eventually (using GtK stock in the meantime)
 _STOCK_ALIAS_LIST = [
-    StockAlias(name=STOCK_INSERT, alias=gtk.STOCK_ADD, text="_Insert"),
-    StockAlias(name=STOCK_RENAME, alias=gtk.STOCK_PASTE, text=""),
+    StockAlias(name=STOCK_INSERT, alias=Gtk.STOCK_ADD, text="_Insert"),
+    StockAlias(name=STOCK_RENAME, alias=Gtk.STOCK_PASTE, text=""),
 ]
 
-
-_STYLE = gtk.Frame().get_style()
+_STYLE = Gtk.Frame().get_style()
 
 for _item in _STOCK_ALIAS_LIST:
     _FACTORY.add(_item.name, _STYLE.lookup_icon_set(_item.alias))
 
-gtk.stock_add([(item.name, item.text, 0, 0, None) for item in _STOCK_ALIAS_LIST])
+#Gtk.stock_add([(item.name, item.text, 0, 0, None) for item in _STOCK_ALIAS_LIST])

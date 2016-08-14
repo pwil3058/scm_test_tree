@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 ### Copyright (C) 2015 Peter Williams <peter_ono@users.sourceforge.net>
 ###
 ### This program is free software; you can redistribute it and/or modify
@@ -98,7 +98,9 @@ GUI_PARSER = SUB_CMD_PARSER.add_parser(
 
 def gui_cmd(args):
     '''Execute the "gui" sub command using the supplied args'''
-    import gtk
+    import gi
+    gi.require_version("Gtk", "3.0")
+    from gi.repository import Gtk
     from scm_test_tree_pkg.gui import dialogue
     from scm_test_tree_pkg.gui import gui
     from scm_test_tree_pkg.gui import recollect
@@ -107,10 +109,10 @@ def gui_cmd(args):
     try:
         dialogue.report_any_problems(ifce.init(recollect.get(config_data.APP_NAME, "last_pgnd")))
         gui.MainWindow().show()
-        gtk.main()
+        Gtk.main()
     except (SystemExit, KeyboardInterrupt):
         pass
-    except Exception:
+    except Exception as edata:
         dialogue.report_exception_as_error(sys.exc_info())
         return 3
     finally:
@@ -121,4 +123,7 @@ GUI_PARSER.set_defaults(run_cmd=gui_cmd)
 
 ARGS = PARSER.parse_args()
 
-sys.exit(ARGS.run_cmd(ARGS))
+if hasattr(ARGS, "run_cmd"):
+    sys.exit(ARGS.run_cmd(ARGS))
+else:
+    PARSER.print_help()

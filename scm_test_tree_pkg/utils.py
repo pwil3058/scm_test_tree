@@ -21,13 +21,14 @@ import stat
 import os
 import os.path
 import subprocess
-import gobject
 import signal
 import zlib
 import gzip
 import bz2
 import re
 import hashlib
+
+from gi.repository import GObject
 
 # TODO: purify utils (i.e. minimize . imports)
 
@@ -229,20 +230,22 @@ def do_turn_off_write_for_file(filepath):
 
 def is_utf8_compliant(text):
     try:
-        _dummy= text.decode('utf-8')
+        text.encode('utf-8')
     except UnicodeError:
         return False
     return True
 
 ISO_8859_CODECS = ['iso-8859-{0}'.format(x) for x in range(1, 17)]
 ISO_2022_CODECS = ['iso-2022-jp', 'iso-2022-kr'] + \
-    ['iso-2022-jp-{0}'.format(x) for x in range(1, 3) + ['2004', 'ext']]
+    ['iso-2022-jp-{0}'.format(x) for x in list(range(1, 3)) + ['2004', 'ext']]
 
 def make_utf8_compliant(text):
     '''Return a UTF-8 compliant version of text'''
     if text is None:
-        return ''
-    if is_utf8_compliant(text):
+        return ""
+    if isinstance(text, bytes):
+        return text.decode("utf-8")
+    elif is_utf8_compliant(text):
         return text
     for codec in ISO_8859_CODECS + ISO_2022_CODECS:
         try:
@@ -305,7 +308,7 @@ def get_git_hash_for_content(content):
 
 def get_git_hash_for_file(filepath):
     if os.path.isfile(filepath):
-        h = hashlib.sha1('blob {0}\000'.format(os.path.getsize(filepath)))
-        h.update(open(filepath).read())
-        return h.hexdigest()
+        hash = hashlib.sha1('blob {0}\000'.format(os.path.getsize(filepath)))
+        hash.update(open(filepath).read())
+        return hash.hexdigest()
     return None

@@ -17,8 +17,9 @@ import os
 import fnmatch
 import collections
 
-import gobject
-import gtk
+from gi.repository import GObject
+from gi.repository import Gtk
+from gi.repository import Gdk
 
 from .. import config_data
 from .. import utils
@@ -29,9 +30,9 @@ from . import tlview
 from . import table
 from . import actions
 from . import ifce
-from . import ws_event
+from . import icons
 
-_KEYVAL_ESCAPE = gtk.gdk.keyval_from_name("Escape")
+_KEYVAL_ESCAPE = Gdk.keyval_from_name("Escape")
 
 class AliasPathTable(table.Table):
     SAVED_FILE_NAME = None
@@ -94,7 +95,7 @@ class AliasPathTable(table.Table):
     class View(table.Table.View):
         class Model(table.Table.View.Model):
             Row = collections.namedtuple("Row", ["Alias", "Path"])
-            types = Row(Alias=gobject.TYPE_STRING, Path=gobject.TYPE_STRING)
+            types = Row(Alias=GObject.TYPE_STRING, Path=GObject.TYPE_STRING)
         specification = tlview.ViewSpec(
             properties={
                 "enable-grid-lines" : False,
@@ -102,7 +103,7 @@ class AliasPathTable(table.Table):
                 "rules_hint" : False,
                 "headers-visible" : True,
             },
-            selection_mode=gtk.SELECTION_SINGLE,
+            selection_mode=Gtk.SelectionMode.SINGLE,
             columns=[
                 tlview.ColumnSpec(
                     title=_("Alias"),
@@ -110,11 +111,11 @@ class AliasPathTable(table.Table):
                     cells=[
                         tlview.CellSpec(
                             cell_renderer_spec=tlview.CellRendererSpec(
-                                cell_renderer=gtk.CellRendererText,
+                                cell_renderer=Gtk.CellRendererText,
                                 expand=False,
-                                start=True
+                                start=True,
+                                properties={"editable" : True},
                             ),
-                            properties={"editable" : True},
                             cell_data_function_spec=None,
                             attributes = {"text" : Model.col_index("Alias")}
                         ),
@@ -126,11 +127,11 @@ class AliasPathTable(table.Table):
                     cells=[
                         tlview.CellSpec(
                             cell_renderer_spec=tlview.CellRendererSpec(
-                                cell_renderer=gtk.CellRendererText,
+                                cell_renderer=Gtk.CellRendererText,
                                 expand=False,
-                                start=True
+                                start=True,
+                                properties={"editable" : False},
                             ),
-                            properties={"editable" : False},
                             cell_data_function_spec=None,
                             attributes = {"text" : Model.col_index("Path")}
                         ),
@@ -167,7 +168,7 @@ class AliasPathTable(table.Table):
             return False
         return data[0]
     def _handle_button_press_cb(self, widget, event):
-        if event.type == gtk.gdk.BUTTON_PRESS:
+        if event.type == Gdk.EventType.BUTTON_PRESS:
             if event.button == 2:
                 self.seln.unselect_all()
                 return True
@@ -183,30 +184,30 @@ SAVED_TGND_FILE_NAME = os.sep.join([config_data.CONFIG_DIR_NAME, "testgrounds"])
 class TGndPathTable(AliasPathTable):
     SAVED_FILE_NAME = SAVED_TGND_FILE_NAME
 
-class PathSelectDialog(dialogue.Dialog):
+class PathSelectDialog(dialogue.BusyDialog):
     PATH_TABLE = AliasPathTable
     def __init__(self, label, suggestion=None, parent=None):
-        dialogue.Dialog.__init__(self, title=_("{0}: Select {1}").format(config_data.APP_NAME, label), parent=parent,
-                                 flags=gtk.DIALOG_MODAL|gtk.DIALOG_DESTROY_WITH_PARENT,
-                                 buttons=(gtk.STOCK_CANCEL, gtk.RESPONSE_CANCEL,
-                                          gtk.STOCK_OK, gtk.RESPONSE_OK)
+        dialogue.BusyDialog.__init__(self, title=_("{0}: Select {1}").format(config_data.APP_NAME, label), parent=parent,
+                                 flags=Gtk.DialogFlags.MODAL|Gtk.DialogFlags.DESTROY_WITH_PARENT,
+                                 buttons=(Gtk.STOCK_CANCEL, Gtk.ResponseType.CANCEL,
+                                          Gtk.STOCK_OK, Gtk.ResponseType.OK)
                                 )
-        hbox = gtk.HBox()
+        hbox = Gtk.HBox()
         self.ap_table = self.PATH_TABLE()
-        hbox.pack_start(self.ap_table)
-        self.vbox.pack_start(hbox)
-        hbox = gtk.HBox()
-        hbox.pack_start(gtk.Label("%s:" % label), expand=False)
-        self._path = gutils.MutableComboBoxEntry()
-        self._path.child.set_width_chars(32)
-        self._path.child.connect("activate", self._path_cb)
+        hbox.pack_start(self.ap_table, expand=True, fill=True, padding=0)
+        self.vbox.pack_start(hbox, expand=True, fill=True, padding=0)
+        hbox = Gtk.HBox()
+        hbox.pack_start(Gtk.Label("%s:" % label), expand=False, fill=True, padding=0)
+        self._path = gutils.new_mutable_combox_text_with_entry()
+        self._path.get_child().set_width_chars(32)
+        self._path.get_child().connect("activate", self._path_cb)
         if suggestion:
             self._path.set_text(suggestion)
-        hbox.pack_start(self._path, expand=True, fill=True)
-        self._browse_button = gtk.Button(label=_("_Browse"))
+        hbox.pack_start(self._path, expand=True, fill=True, padding=0)
+        self._browse_button = Gtk.Button(label=_("Browse"))
         self._browse_button.connect("clicked", self._browse_cb)
-        hbox.pack_start(self._browse_button, expand=False, fill=False)
-        self.vbox.pack_start(hbox, expand=False, fill=False)
+        hbox.pack_start(self._browse_button, expand=False, fill=False, padding=0)
+        self.vbox.pack_start(hbox, expand=False, fill=False, padding=0)
         self.show_all()
         self.ap_table.seln.unselect_all()
         self.ap_table.seln.connect("changed", self._selection_cb)
@@ -215,9 +216,9 @@ class PathSelectDialog(dialogue.Dialog):
         if alpth:
             self._path.set_text(alpth[0])
     def _path_cb(self, entry=None):
-        self.response(gtk.RESPONSE_OK)
+        self.response(Gtk.ResponseType.OK)
     def _browse_cb(self, button=None):
-        dirname = dialogue.ask_dir_name(_("{0}: Browse for Directory").format(config_data.APP_NAME), existing=True, parent=self)
+        dirname = dialogue.select_directory(_("{0}: Browse for Directory").format(config_data.APP_NAME), existing=True, parent=self)
         if dirname:
             self._path.set_text(utils.path_rel_home(dirname))
     def get_path(self):
@@ -226,7 +227,7 @@ class PathSelectDialog(dialogue.Dialog):
 class WSOpenDialog(PathSelectDialog):
     def __init__(self, parent=None):
         PathSelectDialog.__init__(self, create_table=TGndPathTable,
-            label=_('Workspace/Directory'), parent=parent)
+            label=_("Workspace/Directory"), parent=parent)
 
 def change_testground_cb(_widget, newtgnd):
     dialogue.show_busy()
@@ -234,22 +235,21 @@ def change_testground_cb(_widget, newtgnd):
     dialogue.unshow_busy()
     dialogue.report_any_problems(result)
 
-class TestGroundsMenu(gtk.MenuItem):
+class TestGroundsMenu(Gtk.MenuItem):
     def __init__(self, label=_("Test Grounds")):
-        gtk.MenuItem.__init__(self, label)
-        self.set_submenu(gtk.Menu())
+        Gtk.MenuItem.__init__(self, label)
+        self.set_submenu(Gtk.Menu())
         self.connect("enter_notify_event", self._enter_notify_even_cb)
     def _build_submenu(self):
-        _menu = gtk.Menu()
+        _menu = Gtk.Menu()
         newtgnds = TGndPathTable._fetch_contents()
         newtgnds.sort()
         for newtgnd in newtgnds:
             label = "{0.Alias}:->({0.Path})".format(newtgnd)
-            _menu_item = gtk.MenuItem(label)
+            _menu_item = Gtk.MenuItem(label)
             _menu_item.connect("activate", change_testground_cb, os.path.expanduser(newtgnd.Path))
             _menu_item.show()
             _menu.append(_menu_item)
         return _menu
     def _enter_notify_even_cb(self, widget, _event):
-        widget.remove_submenu()
         widget.set_submenu(self._build_submenu())

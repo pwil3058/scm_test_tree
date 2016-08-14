@@ -1,23 +1,25 @@
 
 import os
 
-import gtk
+import gi
+gi.require_version("Gtk", "3.0")
+from gi.repository import Gtk
 
 from .. import config_data
 from .. import utils
 from .. import cmd_ifce
+from .. import enotify
 
 from . import ifce
 from . import config
 from . import dialogue
 from . import actions
 from . import ws_actions
-from . import ws_event
 from . import recollect
 from . import icons
 from . import file_tree
 
-class MainWindow(gtk.Window, dialogue.BusyIndicator, ws_actions.AGandUIManager):
+class MainWindow(Gtk.Window, dialogue.BusyIndicator, actions.CAGandUIManager, enotify.Listener, ws_actions.WSListenerMixin):
     UI_DESCR = \
         '''
         <ui>
@@ -39,31 +41,33 @@ class MainWindow(gtk.Window, dialogue.BusyIndicator, ws_actions.AGandUIManager):
     def __init__(self):
         assert MainWindow.count == 0
         MainWindow.count += 1
-        gtk.Window.__init__(self, gtk.WINDOW_TOPLEVEL)
+        Gtk.Window.__init__(self, Gtk.WindowType.TOPLEVEL)
         self.parse_geometry(recollect.get("main_window", "last_geometry"))
         self.set_icon_from_file(icons.APP_ICON_FILE)
         dialogue.BusyIndicator.__init__(self)
         self.connect("destroy", self._quit)
         dialogue.init(self)
-        ws_actions.AGandUIManager.__init__(self)
+        actions.CAGandUIManager.__init__(self)
+        enotify.Listener.__init__(self)
+        ws_actions.WSListenerMixin.__init__(self)
         self._lhs_menubar = self.ui_manager.get_widget("/left_side_menubar")
         self._lhs_menubar.insert(config.TestGroundsMenu(), 1)
         self._rhs_menubar = self.ui_manager.get_widget("/right_side_menubar")
         self._file_tree_widget = file_tree.FileTreeWidget()
         # Now lay the widgets out
-        vbox = gtk.VBox()
-        hbox = gtk.HBox()
-        hbox.pack_start(self._lhs_menubar, expand=True)
-        hbox.pack_end(self._rhs_menubar, expand=False)
-        vbox.pack_start(hbox, expand=False)
+        vbox = Gtk.VBox()
+        hbox = Gtk.HBox()
+        hbox.pack_start(self._lhs_menubar, expand=True, fill=True, padding=0)
+        hbox.pack_end(self._rhs_menubar, expand=False, fill=True, padding=0)
+        vbox.pack_start(hbox, expand=False, fill=True, padding=0)
         if ifce.TERM:
-            vpaned = gtk.VPaned()
+            vpaned = Gtk.VPaned()
             vpaned.set_position(recollect.get("main_window", "vpaned_position"))
             vpaned.add1(self._file_tree_widget)
             vpaned.add2(ifce.TERM)
-            vbox.pack_start(vpaned, expand=True)
+            vbox.pack_start(vpaned, expand=True, fill=True, padding=0)
         else:
-            vbox.pack_start(self._file_tree_widget, expand=True)
+            vbox.pack_start(self._file_tree_widget, expand=True, fill=True, padding=0)
         self.connect("configure_event", self._configure_event_cb)
         self.add(vbox)
         self.show_all()
@@ -74,15 +78,15 @@ class MainWindow(gtk.Window, dialogue.BusyIndicator, ws_actions.AGandUIManager):
             [
                 ("working_directory_menu", None, _('_Working Directory')),
                 ("configuration_menu", None, _('_Configuration')),
-                ("change_wd_action", gtk.STOCK_OPEN, _('_Open'), "",
+                ("change_wd_action", Gtk.STOCK_OPEN, _('_Open'), "",
                  _("Change current working directory"), self._change_wd_acb),
-                ("new_tgnd_action", gtk.STOCK_NEW, _('_New'), "",
+                ("new_tgnd_action", Gtk.STOCK_NEW, _('_New'), "",
                  _("Create a new test ground and change workspace to that directory"), self._new_tgnd_acb),
-                ("quit_action", gtk.STOCK_QUIT, _("_Quit"), "",
+                ("quit_action", Gtk.STOCK_QUIT, _("_Quit"), "",
                  _("Quit"), self._quit),
             ])
     def _quit(self, _widget):
-        gtk.main_quit()
+        Gtk.main_quit()
     def _update_title(self):
         self.set_title(config_data.APP_NAME + ": {0}".format(utils.path_rel_home(os.getcwd())))
     def _reset_after_cd(self, *args, **kwargs):
@@ -91,7 +95,7 @@ class MainWindow(gtk.Window, dialogue.BusyIndicator, ws_actions.AGandUIManager):
         self.unshow_busy()
     def _change_wd_acb(self, _action=None):
         open_dialog = config.WSOpenDialog(parent=self)
-        if open_dialog.run() == gtk.RESPONSE_OK:
+        if open_dialog.run() == Gtk.ResponseType.OK:
             wspath = open_dialog.get_path()
             if wspath:
                 open_dialog.show_busy()

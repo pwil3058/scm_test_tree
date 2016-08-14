@@ -19,11 +19,12 @@ Workspace status action groups
 
 import collections
 
-import gtk
+from gi.repository import Gtk
 
-from . import ifce
+from .. import enotify
+
 from . import actions
-from . import ws_event
+from . import ifce
 
 AC_NOT_IN_TGND, AC_IN_TGND, AC_IN_TGND_MASK = actions.ActionCondns.new_flags_and_mask(2)
 
@@ -31,14 +32,14 @@ def get_in_tgnd_condns():
     return actions.MaskedCondns(AC_IN_TGND if ifce.in_valid_test_gnd else AC_NOT_IN_TGND, AC_IN_TGND_MASK)
 
 def _update_class_indep_cwd_cb(*args, **kwargs):
-    actions.CLASS_INDEP_AGS.update_condns(get_in_tgnd_condns())
+    condns = get_in_tgnd_condns()
+    actions.CLASS_INDEP_AGS.update_condns(condns)
+    actions.CLASS_INDEP_BGS.update_condns(condns)
 
-ws_event.add_notification_cb(ifce.E_CHANGE_WD, _update_class_indep_cwd_cb)
+enotify.add_notification_cb(ifce.E_CHANGE_WD, _update_class_indep_cwd_cb)
 
-class AGandUIManager(actions.CAGandUIManager, ws_event.Listener):
-    def __init__(self, selection=None, popup=None):
-        actions.CAGandUIManager.__init__(self, selection=selection, popup=popup)
-        ws_event.Listener.__init__(self)
+class WSListenerMixin:
+    def __init__(self):
         self.add_notification_cb(ifce.E_CHANGE_WD, self.cwd_condns_change_cb)
         self.init_action_states()
     def cwd_condns_change_cb(self, *args, **kwargs):
@@ -49,6 +50,6 @@ class AGandUIManager(actions.CAGandUIManager, ws_event.Listener):
 actions.CLASS_INDEP_AGS[actions.AC_DONT_CARE].add_actions(
     [
         ("actions_wd_menu", None, _('_Working Directory')),
-        ("actions_quit", gtk.STOCK_QUIT, _('_Quit'), "",
-         _('Quit'), gtk.main_quit),
+        ("actions_quit", Gtk.STOCK_QUIT, _('_Quit'), "",
+         _('Quit'), Gtk.main_quit),
     ])
