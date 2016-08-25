@@ -13,4 +13,7 @@
 ### along with this program; if not, write to the Free Software
 ### Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
 
+APP_NAME = "scm_test_tree"
+ISSUES_URL = "<https://github.com/pwil3058/scm_test_tree/issues>"
+
 from . import i18n

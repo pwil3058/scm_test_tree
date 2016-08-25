@@ -26,8 +26,6 @@ from .. import enotify
 from . import terminal
 from . import recollect
 
-E_CHANGE_WD = enotify.new_event_flag()
-
 in_valid_test_gnd = False
 
 CURDIR = os.getcwd()
@@ -61,13 +59,13 @@ def init(start_dir=None):
         from . import config
         os.chdir(base_dir)
         TERM.set_cwd(base_dir)
-        config.TGndPathTable.append_saved_path(base_dir)
+        config.TGndPathView.append_saved_path(base_dir)
         in_valid_test_gnd = True
         recollect.set(APP_NAME, "last_pgnd", base_dir)
     else:
         in_valid_test_gnd = False
     CURDIR = os.getcwd()
-    enotify.notify_events(E_CHANGE_WD, new_wd=CURDIR)
+    enotify.notify_events(enotify.E_CHANGE_WD, new_wd=CURDIR)
     return CmdResult.ok()
 
 def close():
@@ -92,7 +90,7 @@ def chdir(newdir=None):
         from . import config
         os.chdir(base_dir)
         TERM.set_cwd(base_dir)
-        config.TGndPathTable.append_saved_path(base_dir)
+        config.TGndPathView.append_saved_path(base_dir)
         in_valid_test_gnd = True
         recollect.set(APP_NAME, "last_pgnd", base_dir)
     else:
@@ -102,15 +100,18 @@ def chdir(newdir=None):
         if TERM:
             TERM.set_cwd(curdir)
     CURDIR = curdir
-    enotify.notify_events(E_CHANGE_WD, new_wd=CURDIR)
+    enotify.notify_events(enotify.E_CHANGE_WD, new_wd=CURDIR)
     return retval
 
-def check_interfaces(args):
+def check_interfaces(event_args):
     from .. import utils
     global CURDIR
     curdir = os.getcwd()
     if not utils.samefile(CURDIR, curdir):
-        args["new_wd"] = curdir
+        event_args["new_wd"] = curdir
         CURDIR = curdir
-        return E_CHANGE_WD # don't send ifce changes and wd change at the same time
+        return enotify.E_CHANGE_WD # don't send ifce changes and wd change at the same time
     return 0
+
+from . import auto_update
+auto_update.set_initialize_event_flags(check_interfaces)

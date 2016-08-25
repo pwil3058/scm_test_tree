@@ -34,8 +34,68 @@ from . import icons
 
 _KEYVAL_ESCAPE = Gdk.keyval_from_name("Escape")
 
-class AliasPathTable(table.Table):
+class AliasPathModel(tlview.NamedListStore):
+    ROW = collections.namedtuple("ROW", ["Alias", "Path"])
+    TYPES = ROW(Alias=GObject.TYPE_STRING, Path=GObject.TYPE_STRING)
+
+class AliasPathView(table.EditableEntriesView):
     SAVED_FILE_NAME = None
+    MODEL = AliasPathModel
+    SPECIFICATION = tlview.ViewSpec(
+        properties={
+            "enable-grid-lines" : False,
+            "reorderable" : False,
+            "rules_hint" : False,
+            "headers-visible" : True,
+        },
+        selection_mode=Gtk.SelectionMode.SINGLE,
+        columns=[
+            tlview.ColumnSpec(
+                title=_("Alias"),
+                properties={"expand": False, "resizable" : True},
+                cells=[
+                    tlview.CellSpec(
+                        cell_renderer_spec=tlview.CellRendererSpec(
+                            cell_renderer=Gtk.CellRendererText,
+                            expand=False,
+                            start=True,
+                            properties={"editable" : True},
+                        ),
+                        cell_data_function_spec=None,
+                        attributes = {"text" : MODEL.col_index("Alias")}
+                    ),
+                ],
+            ),
+            tlview.ColumnSpec(
+                title=_("Path"),
+                properties={"expand": False, "resizable" : True},
+                cells=[
+                    tlview.CellSpec(
+                        cell_renderer_spec=tlview.CellRendererSpec(
+                            cell_renderer=Gtk.CellRendererText,
+                            expand=False,
+                            start=True,
+                            properties={"editable" : False},
+                        ),
+                        cell_data_function_spec=None,
+                        attributes = {"text" : MODEL.col_index("Path")}
+                    ),
+                ],
+            ),
+        ]
+    )
+    def __init__(self):
+        table.EditableEntriesView.__init__(self, size_req=(480, 160))
+        self.register_modification_callback(self.apply_changes)
+        self.set_contents()
+    def apply_changes(self, *args,**kwargs):
+        ap_list = self.get_contents()
+        self._write_list_to_file(ap_list)
+    def get_selected_ap(self):
+        data = self.get_selected_data_by_label(["Path", "Alias"])
+        if not data:
+            return False
+        return data[0]
     @staticmethod
     def _extant_path(path):
         return os.path.exists(os.path.expanduser(path))
@@ -64,7 +124,7 @@ class AliasPathTable(table.Table):
                 abbr_path = cls._abbrev_path(path)
                 if not alias:
                     alias = os.path.basename(path)
-                content.append(cls.View.Model.Row(Path=abbr_path, Alias=alias))
+                content.append(cls.MODEL.ROW(Path=abbr_path, Alias=alias))
                 modified = True
             if modified:
                 cls._write_list_to_file(content)
@@ -77,7 +137,7 @@ class AliasPathTable(table.Table):
         lines = fobj.readlines()
         fobj.close()
         for line in lines:
-            data = cls.View.Model.Row(*line.strip().split(os.pathsep, 1))
+            data = cls.MODEL.ROW(*line.strip().split(os.pathsep, 1))
             if data in extant_ap_list:
                 continue
             if cls._extant_path(data.Path):
@@ -92,97 +152,18 @@ class AliasPathTable(table.Table):
             fobj.write(os.pathsep.join(alpth))
             fobj.write(os.linesep)
         fobj.close()
-    class View(table.Table.View):
-        class Model(table.Table.View.Model):
-            Row = collections.namedtuple("Row", ["Alias", "Path"])
-            types = Row(Alias=GObject.TYPE_STRING, Path=GObject.TYPE_STRING)
-        specification = tlview.ViewSpec(
-            properties={
-                "enable-grid-lines" : False,
-                "reorderable" : False,
-                "rules_hint" : False,
-                "headers-visible" : True,
-            },
-            selection_mode=Gtk.SelectionMode.SINGLE,
-            columns=[
-                tlview.ColumnSpec(
-                    title=_("Alias"),
-                    properties={"expand": False, "resizable" : True},
-                    cells=[
-                        tlview.CellSpec(
-                            cell_renderer_spec=tlview.CellRendererSpec(
-                                cell_renderer=Gtk.CellRendererText,
-                                expand=False,
-                                start=True,
-                                properties={"editable" : True},
-                            ),
-                            cell_data_function_spec=None,
-                            attributes = {"text" : Model.col_index("Alias")}
-                        ),
-                    ],
-                ),
-                tlview.ColumnSpec(
-                    title=_("Path"),
-                    properties={"expand": False, "resizable" : True},
-                    cells=[
-                        tlview.CellSpec(
-                            cell_renderer_spec=tlview.CellRendererSpec(
-                                cell_renderer=Gtk.CellRendererText,
-                                expand=False,
-                                start=True,
-                                properties={"editable" : False},
-                            ),
-                            cell_data_function_spec=None,
-                            attributes = {"text" : Model.col_index("Path")}
-                        ),
-                    ],
-                ),
-            ]
-        )
-    def __init__(self):
-        table.Table.__init__(self, size_req=(480, 160))
-        self.view.register_modification_callback(self.save_to_file)
-        self.connect("key_press_event", self._key_press_cb)
-        self.connect("button_press_event", self._handle_button_press_cb)
-        self.set_contents()
-    def add_ap(self, path, alias=""):
-        if self._extant_path(path):
-            model_iter = self.model.get_iter_first()
-            while model_iter:
-                if self._same_paths(self.model.get_value_named(model_iter, "Path"), path):
-                    if alias:
-                        self.model.set_value_named(model_iter, "Alias", alias)
-                    return
-                model_iter = self.model.iter_next(model_iter)
-            if not alias:
-                alias = self._default_alias(path)
-            data = self.model.Row(Path=self._abbrev_path(path), Alias=alias)
-            self.model.append(data)
-            self.save_to_file()
-    def save_to_file(self, *args,**kwargs):
-        ap_list = self.get_contents()
-        self._write_list_to_file(ap_list)
-    def get_selected_ap(self):
-        data = self.get_selected_data_by_label(["Path", "Alias"])
-        if not data:
-            return False
-        return data[0]
-    def _handle_button_press_cb(self, widget, event):
-        if event.type == Gdk.EventType.BUTTON_PRESS:
-            if event.button == 2:
-                self.seln.unselect_all()
-                return True
-        return False
-    def _key_press_cb(self, widget, event):
-        if event.keyval == _KEYVAL_ESCAPE:
-            self.seln.unselect_all()
-            return True
-        return False
+
+class AliasPathTable(table.EditedEntriesTable):
+    BUTTONS = []
+    VIEW = AliasPathView
 
 SAVED_TGND_FILE_NAME = os.sep.join([config_data.CONFIG_DIR_NAME, "testgrounds"])
 
-class TGndPathTable(AliasPathTable):
+class TGndPathView(AliasPathView):
     SAVED_FILE_NAME = SAVED_TGND_FILE_NAME
+
+class TGndPathTable(AliasPathTable):
+    VIEW = TGndPathView
 
 class PathSelectDialog(dialogue.BusyDialog):
     PATH_TABLE = AliasPathTable
@@ -212,7 +193,7 @@ class PathSelectDialog(dialogue.BusyDialog):
         self.ap_table.seln.unselect_all()
         self.ap_table.seln.connect("changed", self._selection_cb)
     def _selection_cb(self, _selection=None):
-        alpth = self.ap_table.get_selected_ap()
+        alpth = self.ap_table.view.get_selected_ap()
         if alpth:
             self._path.set_text(alpth[0])
     def _path_cb(self, entry=None):
@@ -225,9 +206,9 @@ class PathSelectDialog(dialogue.BusyDialog):
         return os.path.expanduser(self._path.get_text())
 
 class WSOpenDialog(PathSelectDialog):
+    PATH_TABLE = TGndPathTable
     def __init__(self, parent=None):
-        PathSelectDialog.__init__(self, create_table=TGndPathTable,
-            label=_("Workspace/Directory"), parent=parent)
+        PathSelectDialog.__init__(self, label=_("Workspace/Directory"), parent=parent)
 
 def change_testground_cb(_widget, newtgnd):
     dialogue.show_busy()
@@ -242,7 +223,7 @@ class TestGroundsMenu(Gtk.MenuItem):
         self.connect("enter_notify_event", self._enter_notify_even_cb)
     def _build_submenu(self):
         _menu = Gtk.Menu()
-        newtgnds = TGndPathTable._fetch_contents()
+        newtgnds = TGndPathView._fetch_contents()
         newtgnds.sort()
         for newtgnd in newtgnds:
             label = "{0.Alias}:->({0.Path})".format(newtgnd)

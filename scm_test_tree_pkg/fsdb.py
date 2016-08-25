@@ -16,7 +16,7 @@
 import collections
 import os
 import hashlib
-from itertools import filterfalse
+
 from gi.repository import Pango
 
 from . import enotify
@@ -128,8 +128,8 @@ class OsFileDb:
                 dirs = iter(self._subdirs_data)
                 files = iter(self._files_data)
             else:
-                dirs = filterfalse((lambda x: x.name[0] == "."), self._subdirs_data)
-                files = filterfalse((lambda x: x.name[0] == "."), self._files_data)
+                dirs = filter((lambda x: x.name[0] != "."), self._subdirs_data)
+                files = filter((lambda x: x.name[0] != "."), self._files_data)
             return (dirs, files)
     def __init__(self, **kwargs):
         # NB: we don't save kwargs as it's only there to allow children
@@ -247,17 +247,17 @@ class GenericSnapshotWsFileDb(OsFileDb):
                 self._dir_hash_digest = self._populate()
             if show_hidden:
                 if hide_clean:
-                    dirs = filterfalse((lambda x: self._is_clean_dir(x)), self._subdirs_data)
-                    files = filterfalse((lambda x: self._is_clean_file(x)), self._files_data)
+                    dirs = filter((lambda x: x.status not in self.CLEAN_STATUS_SET), self._subdirs_data)
+                    files = filter((lambda x: x.status not in self.CLEAN_STATUS_SET), self._files_data)
                 else:
                     dirs = iter(self._subdirs_data)
                     files = iter(self._files_data)
             elif hide_clean:
-                dirs = filterfalse((lambda x: (self._is_clean_dir(x) or self._is_hidden_dir(x))), self._subdirs_data)
-                files = filterfalse((lambda x: (self._is_clean_file(x) or self._is_hidden_file(x))), self._files_data)
+                dirs = filter((lambda x: not (x.status in self.CLEAN_STATUS_SET or self._is_hidden_dir(x))), self._subdirs_data)
+                files = filter((lambda x: not (x.status in self.CLEAN_STATUS_SET or self._is_hidden_file(x))), self._files_data)
             else:
-                dirs = filterfalse((lambda x: self._is_hidden_dir(x)), self._subdirs_data)
-                files = filterfalse((lambda x: self._is_hidden_file(x)), self._files_data)
+                dirs = filter((lambda x: not self._is_hidden_dir(x)), self._subdirs_data)
+                files = filter((lambda x: not self._is_hidden_file(x)), self._files_data)
             return (dirs, files)
     def __init__(self, **kwargs):
         # save the args for use in reset and related attribute mechanism
@@ -335,8 +335,8 @@ class GenericChangeFileDb:
             return self._subdirs[dir_path[:sep_index]].find_dir(dir_path[sep_index + 1:])
         def dirs_and_files(self, hide_clean=False, **kwargs):
             if hide_clean:
-                dirs = filterfalse((lambda x: x.status in self.CLEAN_STATUS_SET), self._subdirs_data)
-                files = filterfalse((lambda x: x.status in self.CLEAN_STATUS_SET), self._files_data)
+                dirs = filter((lambda x: x.status not in self.CLEAN_STATUS_SET), self._subdirs_data)
+                files = filter((lambda x: x.status not in self.CLEAN_STATUS_SET), self._files_data)
             else:
                 dirs = iter(self._subdirs_data)
                 files = iter(self._files_data)

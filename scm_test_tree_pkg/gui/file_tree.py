@@ -42,13 +42,13 @@ def _check_if_force(result):
     return dialogue.ask_force_or_cancel(result) == dialogue.Response.FORCE
 
 class FileTreeView(tlview.TreeView, actions.CAGandUIManager, actions.BGUserMixin, enotify.Listener, dialogue.BusyIndicatorUser, auto_update.AutoUpdater, ws_actions.WSListenerMixin):
-    REPOPULATE_EVENTS = ifce.E_CHANGE_WD
+    REPOPULATE_EVENTS = enotify.E_CHANGE_WD
     UPDATE_EVENTS = os_utils.E_FILE_CHANGES
     AU_FILE_CHANGE_EVENT = os_utils.E_FILE_CHANGES # event returned by auto_update() if changes found
     DEFAULT_POPUP = "/files_popup"
-    class Model(tlview.TreeView.Model):
-        Row = collections.namedtuple('Row', ['name', 'is_dir', 'style', 'foreground', 'icon', 'status', 'related_file_data'])
-        types = Row(
+    class MODEL(tlview.NamedTreeStore):
+        ROW = collections.namedtuple('ROW', ['name', 'is_dir', 'style', 'foreground', 'icon', 'status', 'related_file_data'])
+        TYPES = ROW(
             name=GObject.TYPE_STRING,
             is_dir=GObject.TYPE_BOOLEAN,
             style=GObject.TYPE_INT,
@@ -136,7 +136,7 @@ class FileTreeView(tlview.TreeView, actions.CAGandUIManager, actions.BGUserMixin
       </popup>
     </ui>
     '''
-    specification = tlview.ViewSpec(
+    SPECIFICATION = tlview.ViewSpec(
         properties={"headers-visible" : False},
         selection_mode=Gtk.SelectionMode.MULTIPLE,
         columns=[
@@ -152,7 +152,7 @@ class FileTreeView(tlview.TreeView, actions.CAGandUIManager, actions.BGUserMixin
                             properties={},
                         ),
                         cell_data_function_spec=None,
-                        attributes={"stock-id" : Model.col_index("icon")}
+                        attributes={"stock-id" : MODEL.col_index("icon")}
                     ),
                     tlview.CellSpec(
                         cell_renderer_spec=tlview.CellRendererSpec(
@@ -162,7 +162,7 @@ class FileTreeView(tlview.TreeView, actions.CAGandUIManager, actions.BGUserMixin
                             properties={},
                         ),
                         cell_data_function_spec=None,
-                        attributes={"text" : Model.col_index("status"), "style" : Model.col_index("style"), "foreground" : Model.col_index("foreground")}
+                        attributes={"text" : MODEL.col_index("status"), "style" : MODEL.col_index("style"), "foreground" : MODEL.col_index("foreground")}
                     ),
                     tlview.CellSpec(
                         cell_renderer_spec=tlview.CellRendererSpec(
@@ -172,7 +172,7 @@ class FileTreeView(tlview.TreeView, actions.CAGandUIManager, actions.BGUserMixin
                             properties={},
                         ),
                         cell_data_function_spec=tlview.CellDataFunctionSpec(function=_format_file_name_crcb, user_data=None),
-                        attributes={"style" : Model.col_index("style"), "foreground" : Model.col_index("foreground")}
+                        attributes={"style" : MODEL.col_index("style"), "foreground" : MODEL.col_index("foreground")}
                     )
                 ]
             )
@@ -218,7 +218,7 @@ class FileTreeView(tlview.TreeView, actions.CAGandUIManager, actions.BGUserMixin
     @classmethod
     def _generate_row_tuple(cls, data, isdir):
         deco = cls._get_status_deco(data.status)
-        row = cls.Model.Row(
+        row = cls.MODEL.ROW(
             name=data.name,
             is_dir=isdir,
             icon=cls._FILE_ICON[isdir],
@@ -635,7 +635,7 @@ class FileTreeWidget(Gtk.VBox, enotify.Listener):
         # Mode selectors
         button_box = self.file_tree.button_group.create_button_box(self.BUTTON_BAR_ACTIONS)
         self.pack_start(button_box, expand=False, fill=True, padding=0)
-        self.add_notification_cb(ifce.E_CHANGE_WD, self._cwd_change_cb)
+        self.add_notification_cb(enotify.E_CHANGE_WD, self._cwd_change_cb)
         self.show_all()
     @staticmethod
     def get_menu_prefix():

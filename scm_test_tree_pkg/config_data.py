@@ -18,7 +18,8 @@ import gettext
 
 HOME = os.path.expanduser("~")
 
-APP_NAME = "scm_test_tree"
+from . import APP_NAME
+from . import ISSUES_URL
 
 CONFIG_DIR_NAME = os.sep.join([HOME, "." + APP_NAME + ".d"])
 
@@ -27,10 +28,10 @@ if not os.path.exists(CONFIG_DIR_NAME):
 
 def get_report_request_msg():
     return \
-    _('''
+    _("""
     Please report this problem by raising an issue at:
-      <https://github.com/pwil3058/scm_test_tree/issues>
+      {}
     and including a copy of the details below this message.
 
     Thank you.
-    ''')
+    """).format(ISSUES_URL)
