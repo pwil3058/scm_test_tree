@@ -32,6 +32,7 @@ class MainWindow(Gtk.Window, dialogue.BusyIndicator, actions.CAGandUIManager, en
             </menubar>
             <menubar name="right_side_menubar">
                 <menu action="configuration_menu">
+                    <menuitem action="allocate_xtnl_editors"/>
                     <menuitem action="config_auto_update"/>
                 </menu>
             </menubar>
