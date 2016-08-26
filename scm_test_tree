@@ -112,9 +112,9 @@ def gui_cmd(args):
         Gtk.main()
     except (SystemExit, KeyboardInterrupt):
         pass
-    except Exception as edata:
-        dialogue.report_exception_as_error(sys.exc_info())
-        return 3
+    #except Exception as edata:
+        #dialogue.report_exception_as_error(sys.exc_info())
+        #return 3
     finally:
         ifce.close()
     return 0

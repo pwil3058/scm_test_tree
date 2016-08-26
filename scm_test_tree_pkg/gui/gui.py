@@ -17,7 +17,7 @@ from . import actions
 from . import ws_actions
 from . import recollect
 from . import icons
-from . import file_tree
+from . import file_tree_managed
 
 class MainWindow(Gtk.Window, dialogue.BusyIndicator, actions.CAGandUIManager, enotify.Listener, ws_actions.WSListenerMixin):
     UI_DESCR = \
@@ -53,7 +53,7 @@ class MainWindow(Gtk.Window, dialogue.BusyIndicator, actions.CAGandUIManager, en
         self._lhs_menubar = self.ui_manager.get_widget("/left_side_menubar")
         self._lhs_menubar.insert(config.TestGroundsMenu(), 1)
         self._rhs_menubar = self.ui_manager.get_widget("/right_side_menubar")
-        self._file_tree_widget = file_tree.FileTreeWidget()
+        self._file_tree_widget = file_tree_managed.ManagedFileTreeWidget()
         # Now lay the widgets out
         vbox = Gtk.VBox()
         hbox = Gtk.HBox()

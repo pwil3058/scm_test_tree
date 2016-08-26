@@ -126,7 +126,7 @@ def modify_files(filepath_list, add_tws=False, no_newline=False, gui_calling=Fal
             continue
         try:
             with open(filepath, 'ab') as fobj:
-                fobj.write(template.format(filepath))
+                fobj.write(template.format(filepath).encode())
         except IOError as edata:
             emsg = "{0}: {1}\n".format(edata.filename, edata.strerror)
             if gui_calling:

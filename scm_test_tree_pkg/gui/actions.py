@@ -29,6 +29,8 @@ class MaskedCondns(collections.namedtuple('MaskedCondns', ['condns', 'mask'])):
 
     def __or__(self, other):
         return MaskedCondns(self.condns | other.condns, self.mask | other.mask)
+    def __str__(self):
+        return "MaskedCondns(condns={0:x}, mask={1:x})".format(self.condns, self.mask)
 
 class ActionCondns:
     from .. import utils
@@ -273,7 +275,7 @@ class ConditionalActionGroups:
         """
         return self.get_action(action_name).connect('activate', callback, *user_data)
     def __str__(self):
-        string = 'ConditionalActionGroups({0})\n'.format(self.name)
+        string = 'ConditionalActionGroups({0}): condns={1:x}\n'.format(self.name, self.current_condns)
         for condns, group in self.groups.items():
             name = group.get_name()
             member_names = '['

@@ -43,9 +43,19 @@ class WSListenerMixin:
         self.add_notification_cb(enotify.E_CHANGE_WD, self.cwd_condns_change_cb)
         self.init_action_states()
     def cwd_condns_change_cb(self, *args, **kwargs):
-        self.action_groups.update_condns(get_in_tgnd_condns())
+        condns = get_in_tgnd_condns()
+        self.action_groups.update_condns(condns)
+        try:
+            self.button_groups.update_condns(condns)
+        except AttributeError:
+            pass
     def init_action_states(self):
-        self.action_groups.update_condns(get_in_tgnd_condns())
+        condns = get_in_tgnd_condns()
+        self.action_groups.update_condns(condns)
+        try:
+            self.button_groups.update_condns(condns)
+        except AttributeError:
+            pass
 
 actions.CLASS_INDEP_AGS[actions.AC_DONT_CARE].add_actions(
     [
