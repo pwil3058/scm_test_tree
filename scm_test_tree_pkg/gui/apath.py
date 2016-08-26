@@ -28,11 +28,6 @@ from . import dialogue
 from . import gutils
 from . import tlview
 from . import table
-from . import actions
-from . import ifce
-from . import icons
-
-_KEYVAL_ESCAPE = Gdk.keyval_from_name("Escape")
 
 class AliasPathModel(tlview.NamedListStore):
     ROW = collections.namedtuple("ROW", ["Alias", "Path"])
@@ -152,18 +147,39 @@ class AliasPathView(table.EditableEntriesView):
             fobj.write(os.pathsep.join(alpth))
             fobj.write(os.linesep)
         fobj.close()
+    @classmethod
+    def generate_alias_path_menu(cls, label, item_activation_cb):
+        return AliasPathMenu(label, cls._fetch_contents, item_activation_cb)
+
+class AliasPathMenu(Gtk.MenuItem):
+    def __init__(self, label, fetch_contents_func, item_activation_action):
+        self._fetch_contents = fetch_contents_func
+        self._item_activation_action = item_activation_action
+        Gtk.MenuItem.__init__(self, label)
+        self.set_submenu(Gtk.Menu())
+        self.connect("enter_notify_event", self._enter_notify_even_cb)
+    def _build_submenu(self):
+        _menu = Gtk.Menu()
+        newtgnds = self._fetch_contents()
+        newtgnds.sort()
+        for newtgnd in newtgnds:
+            label = _("{0.Alias}:->({0.Path})").format(newtgnd)
+            _menu_item = Gtk.MenuItem(label)
+            _menu_item.connect("activate", self._item_activation_cb, os.path.expanduser(newtgnd.Path))
+            _menu_item.show()
+            _menu.append(_menu_item)
+        return _menu
+    def _enter_notify_even_cb(self, widget, _event):
+        widget.set_submenu(self._build_submenu())
+    def _item_activation_cb(self, _widget, newtgnd):
+        dialogue.show_busy()
+        result = self._item_activation_action(newtgnd)
+        dialogue.unshow_busy()
+        dialogue.report_any_problems(result)
 
 class AliasPathTable(table.EditedEntriesTable):
     BUTTONS = []
     VIEW = AliasPathView
-
-SAVED_TGND_FILE_NAME = os.sep.join([config_data.CONFIG_DIR_NAME, "testgrounds"])
-
-class TGndPathView(AliasPathView):
-    SAVED_FILE_NAME = SAVED_TGND_FILE_NAME
-
-class TGndPathTable(AliasPathTable):
-    VIEW = TGndPathView
 
 class PathSelectDialog(dialogue.BusyDialog):
     PATH_TABLE = AliasPathTable
@@ -204,33 +220,3 @@ class PathSelectDialog(dialogue.BusyDialog):
             self._path.set_text(utils.path_rel_home(dirname))
     def get_path(self):
         return os.path.expanduser(self._path.get_text())
-
-class WSOpenDialog(PathSelectDialog):
-    PATH_TABLE = TGndPathTable
-    def __init__(self, parent=None):
-        PathSelectDialog.__init__(self, label=_("Workspace/Directory"), parent=parent)
-
-def change_testground_cb(_widget, newtgnd):
-    dialogue.show_busy()
-    result = ifce.chdir(newtgnd)
-    dialogue.unshow_busy()
-    dialogue.report_any_problems(result)
-
-class TestGroundsMenu(Gtk.MenuItem):
-    def __init__(self, label=_("Test Grounds")):
-        Gtk.MenuItem.__init__(self, label)
-        self.set_submenu(Gtk.Menu())
-        self.connect("enter_notify_event", self._enter_notify_even_cb)
-    def _build_submenu(self):
-        _menu = Gtk.Menu()
-        newtgnds = TGndPathView._fetch_contents()
-        newtgnds.sort()
-        for newtgnd in newtgnds:
-            label = "{0.Alias}:->({0.Path})".format(newtgnd)
-            _menu_item = Gtk.MenuItem(label)
-            _menu_item.connect("activate", change_testground_cb, os.path.expanduser(newtgnd.Path))
-            _menu_item.show()
-            _menu.append(_menu_item)
-        return _menu
-    def _enter_notify_even_cb(self, widget, _event):
-        widget.set_submenu(self._build_submenu())

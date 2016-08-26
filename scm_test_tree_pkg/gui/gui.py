@@ -52,7 +52,7 @@ class MainWindow(Gtk.Window, dialogue.BusyIndicator, actions.CAGandUIManager, en
         enotify.Listener.__init__(self)
         ws_actions.WSListenerMixin.__init__(self)
         self._lhs_menubar = self.ui_manager.get_widget("/left_side_menubar")
-        self._lhs_menubar.insert(config.TestGroundsMenu(), 1)
+        self._lhs_menubar.insert(config.generate_testground_menu(), 1)
         self._rhs_menubar = self.ui_manager.get_widget("/right_side_menubar")
         self._file_tree_widget = file_tree_managed.ManagedFileTreeWidget()
         # Now lay the widgets out
@@ -95,7 +95,7 @@ class MainWindow(Gtk.Window, dialogue.BusyIndicator, actions.CAGandUIManager, en
         self._update_title()
         self.unshow_busy()
     def _change_wd_acb(self, _action=None):
-        open_dialog = config.WSOpenDialog(parent=self)
+        open_dialog = config.TGndOpenDialog(parent=self)
         if open_dialog.run() == Gtk.ResponseType.OK:
             wspath = open_dialog.get_path()
             if wspath:
