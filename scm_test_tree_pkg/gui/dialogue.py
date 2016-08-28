@@ -168,7 +168,7 @@ class FileChooserDialog(Gtk.FileChooserDialog):
 class SelectFromListDialog(BusyDialog):
     __g_type_name__ = "SelectFromListDialog"
     def __init__(self, olist=list(), prompt=_('Select from list:'), parent=None):
-        Dialog.__init__(self, "{0}: {1}".format(config_data.APP_NAME, os.getcwd()), parent,
+        BusyDialog.__init__(self, "{0}: {1}".format(config_data.APP_NAME, os.getcwd()), parent,
                         Gtk.DialogFlags.DESTROY_WITH_PARENT,
                         (Gtk.STOCK_CANCEL, Gtk.ResponseType.CANCEL,
                         Gtk.STOCK_OK, Gtk.ResponseType.OK))

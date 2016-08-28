@@ -111,7 +111,7 @@ def assign_extern_editors(file_list):
     return ed_assignments
 
 class EditorAllocationModel(tlview.NamedListStore):
-    ROW = collections.namedtuple("Row", ["globs", "editor"])
+    ROW = collections.namedtuple("ROW", ["globs", "editor"])
     TYPES = ROW(globs=GObject.TYPE_STRING, editor=GObject.TYPE_STRING)
 
 class EditorAllocationView(table.EditableEntriesView):

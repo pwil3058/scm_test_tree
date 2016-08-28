@@ -208,8 +208,8 @@ class FileTreeModel(Gtk.TreeStore, enotify.Listener, auto_update.AutoUpdater, ac
         for dirdata in dirs:
             dir_iter = self.append(parent_iter, [dirdata])
             if self._view.AUTO_EXPAND:
-                self._populate_dir(os.path.join(dirpath, dirdata.name), dir_iter)
-                self._view.expand_row(self.model.get_path(dir_iter), True)
+                self._populate_dir(dirdata.path, dir_iter)
+                self._view.expand_row(self.get_path(dir_iter), True)
             else:
                 self.insert_place_holder(dir_iter)
         for filedata in files:
@@ -571,7 +571,7 @@ class FileTreeWidget(Gtk.VBox, enotify.Listener):
     MENUBAR = "/files_menubar"
     BUTTON_BAR_ACTIONS = ["show_hidden_files"]
     TREE_VIEW = FileTreeView
-    SIZE = (240, 320)
+    SIZE = (120, 60)
     def __init__(self, show_hidden=False, hide_clean=False, **kwargs):
         Gtk.VBox.__init__(self)
         enotify.Listener.__init__(self)

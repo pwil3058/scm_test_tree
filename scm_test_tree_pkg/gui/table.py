@@ -230,7 +230,7 @@ class TableView(tlview.ListView, actions.CAGandUIManager, dialogue.BusyIndicator
         self._table_db = self._table_db.reset() if (tbd_reset_only and self in tbd_reset_only) else self._get_table_db()
         return self._table_db.iter_rows()
     def _set_contents(self, **kwargs):
-        model = self.Model()
+        model = self.MODEL()
         model.set_contents(self._fetch_contents(**kwargs))
         self.set_model(model)
         self.columns_autosize()
