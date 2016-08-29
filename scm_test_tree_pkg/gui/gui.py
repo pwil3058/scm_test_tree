@@ -105,7 +105,7 @@ class MainWindow(Gtk.Window, dialogue.BusyIndicator, actions.CAGandUIManager, en
                 dialogue.report_any_problems(result)
         open_dialog.destroy()
     def _new_tgnd_acb(self, _action):
-        dirname = dialogue.ask_dir_name(_("{0}: Browse for Directory").format(config_data.APP_NAME), existing=True, parent=self)
+        dirname = dialogue.ask_dir_path(_("{0}: Browse for Directory").format(config_data.APP_NAME), existing=True, parent=self)
         if dirname:
             result = cmd_ifce.create_test_tree(dirname, gui_calling=True)
             if result.is_less_than_error:
