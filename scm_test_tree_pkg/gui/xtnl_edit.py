@@ -47,6 +47,8 @@ for env in ["VISUAL", "EDITOR"]:
     except KeyError:
         pass
 
+DEFAULT_PERUSER = DEFAULT_EDITOR
+
 for env in ["COLORTERM", "TERM"]:
     try:
         term = os.environ[env]
@@ -57,6 +59,7 @@ for env in ["COLORTERM", "TERM"]:
         pass
 
 EDITOR_GLOB_FILE_NAME = os.sep.join([config_data.CONFIG_DIR_NAME, "editors"])
+PERUSER_GLOB_FILE_NAME = os.sep.join([config_data.CONFIG_DIR_NAME, "perusers"])
 
 def _read_editor_defs(edeff=EDITOR_GLOB_FILE_NAME):
     editor_defs = []
@@ -109,6 +112,16 @@ def assign_extern_editors(file_list):
         else:
             ed_assignments[DEFAULT_EDITOR] = unassigned_files
     return ed_assignments
+
+def assign_extern_perusers(file_list):
+    peruser_assignments, unassigned_files = _assign_extern_editors(file_list, PERUSER_GLOB_FILE_NAME)
+    extra_assigns = assign_extern_editors(unassigned_files)
+    for key in extra_assigns:
+        if key in peruser_assignments:
+            peruser_assignments[key] += extra_assigns[key]
+        else:
+            peruser_assignments[key] = extra_assigns[key]
+    return peruser_assignments
 
 class EditorAllocationModel(tlview.NamedListStore):
     ROW = collections.namedtuple("ROW", ["globs", "editor"])
@@ -204,6 +217,16 @@ def _edit_files_extern(file_list, ed_assigns):
 def edit_files_extern(file_list):
     return _edit_files_extern(file_list, assign_extern_editors(file_list))
 
+class PeruserAllocationView(EditorAllocationView):
+    EDEFF = PERUSER_GLOB_FILE_NAME
+
+class PeruserAllocationTable(EditorAllocationTable):
+    VIEW = PeruserAllocationView
+
+class PeruserAllocationDialog(EditorAllocationDialog):
+    TABLE = PeruserAllocationTable
+    TITLE = _("{0}: Peruser Allocation".format(config_data.APP_NAME))
+
 def peruse_files_extern(file_list):
     return _edit_files_extern(file_list, assign_extern_perusers(file_list))
 
@@ -212,6 +235,10 @@ actions.CLASS_INDEP_AGS[actions.AC_DONT_CARE].add_actions(
     [
         ("allocate_xtnl_editors", Gtk.STOCK_PREFERENCES, _("_Editor Allocation"), "",
          _('Allocate editors to file types'),
-         lambda _action:  EditorAllocationDialog().show()
+         lambda _action=None:  EditorAllocationDialog(parent=dialogue.main_window).show()
+        ),
+        ("allocate_xtnl_perusers", Gtk.STOCK_PREFERENCES, _("_Peruser Allocation"), "",
+         _("Allocate perusers to file types"),
+         lambda _action=None: PeruserAllocationDialog(parent=dialogue.main_window).show()
         ),
     ])
