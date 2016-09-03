@@ -91,17 +91,15 @@ class MainWindow(Gtk.Window, dialogue.BusyIndicator, actions.CAGandUIManager, en
     def _update_title(self):
         self.set_title(config_data.APP_NAME + ": {0}".format(utils.path_rel_home(os.getcwd())))
     def _reset_after_cd(self, *args, **kwargs):
-        self.show_busy()
-        self._update_title()
-        self.unshow_busy()
+        with self.showing_busy():
+            self._update_title()
     def _change_wd_acb(self, _action=None):
         open_dialog = config.TGndOpenDialog(parent=self)
         if open_dialog.run() == Gtk.ResponseType.OK:
             wspath = open_dialog.get_path()
             if wspath:
-                open_dialog.show_busy()
-                result = ifce.chdir(wspath)
-                open_dialog.unshow_busy()
+                with open_dialog.showing_busy():
+                    result = ifce.chdir(wspath)
                 dialogue.report_any_problems(result)
         open_dialog.destroy()
     def _new_tgnd_acb(self, _action):
