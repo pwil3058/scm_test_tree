@@ -17,3 +17,9 @@ APP_NAME = "scm_test_tree"
 ISSUES_URL = "<https://github.com/pwil3058/scm_test_tree/issues>"
 
 from . import i18n
+
+# temporary import of aipoed packages (to be rescinded) TODO
+from aipoed import enotify
+from aipoed import Result, CmdResult, ActionResult, Suggestion, CmdFailure
+from aipoed import os_utils
+

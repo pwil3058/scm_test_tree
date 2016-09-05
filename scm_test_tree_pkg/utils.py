@@ -33,7 +33,7 @@ from gi.repository import GObject
 
 # TODO: purify utils (i.e. minimize . imports)
 
-from .cmd_result import CmdResult
+from . import CmdResult
 from .config_data import HOME
 
 def singleton(aClass):
@@ -289,17 +289,17 @@ def get_digest_for_file_list(file_list):
     h = hashlib.sha1()
     for filepath in file_list:
         if os.path.isfile(filepath):
-            h.update(open(filepath).read())
+            h.update(open(filepath, "rb").read())
     return h.digest()
 
 def get_git_hash_for_content(content):
-    h = hashlib.sha1('blob {0}\000'.format(len(content)))
+    h = hashlib.sha1('blob {0}\000'.format(len(content)).encode())
     h.update(content)
     return h.hexdigest()
 
 def get_git_hash_for_file(filepath):
     if os.path.isfile(filepath):
-        h = hashlib.sha1('blob {0}\000'.format(os.path.getsize(filepath)))
-        h.update(open(filepath).read())
+        h = hashlib.sha1('blob {0}\000'.format(os.path.getsize(filepath)).encode())
+        h.update(open(filepath, "rb").read())
         return h.hexdigest()
     return None

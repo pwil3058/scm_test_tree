@@ -24,7 +24,7 @@ IGNORES = COUNT_FILE + "\n.hgignore\n.gitignore\n.darning.dbd\n"
 def create_test_tree(base_dir_name="", gui_calling=False):
     '''Execute the "create" sub command using the supplied args'''
     if gui_calling:
-        from .cmd_result import CmdResult
+        from . import CmdResult
     if base_dir_name:
         if not os.path.exists(base_dir_name):
             try:
@@ -91,7 +91,7 @@ def create_test_tree(base_dir_name="", gui_calling=False):
 def modify_files(filepath_list, add_tws=False, no_newline=False, gui_calling=False):
     '''Execute the "modify" sub command using the supplied args'''
     if gui_calling:
-        from .cmd_result import CmdResult
+        from . import CmdResult
     try:
         modno = int(open(COUNT_FILE, 'r').read()) + 1
         open(COUNT_FILE, 'w').write("{0}".format(modno))
