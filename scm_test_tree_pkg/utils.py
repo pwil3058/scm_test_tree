@@ -33,7 +33,8 @@ from gi.repository import GObject
 
 # TODO: purify utils (i.e. minimize . imports)
 
-from . import CmdResult
+from aipoed import CmdResult
+
 from .config_data import HOME
 
 def singleton(aClass):
@@ -143,7 +144,7 @@ def get_file_contents(srcfile, decompress=True):
     decompression as indicated by filename's suffix.
     '''
     if decompress:
-        from . import runext
+        from aipoed import runext
         _root, ext = os.path.splitext(srcfile)
         res = 0
         if ext == '.gz':

@@ -19,14 +19,16 @@ import os.path
 
 from gi.repository import Gtk
 
-from .. import cmd_ifce
-from .. import enotify
+from aipoed import enotify
 
-from . import actions
-from . import dialogue
+from aipoed.gui import file_tree
+from aipoed.gui import dialogue
+from aipoed.gui import actions
+
+from .. import cmd_ifce
+
 from . import ws_actions
 from . import icons
-from . import file_tree
 
 class ManagedFileTreeView(file_tree.FileTreeView, enotify.Listener, ws_actions.WSListenerMixin):
     DEFAULT_POPUP = "/stt_files_popup"
@@ -101,7 +103,7 @@ class ManagedFileTreeView(file_tree.FileTreeView, enotify.Listener, ws_actions.W
                 ),
             ])
     def modify_selected_files_acb(self, _menu_item):
-        dialogue.report_any_problems(cmd_ifce.modify_files(self.get_selected_file_paths(), gui_calling=True), parent=self._parent)
+        self.report_any_problems(cmd_ifce.modify_files(self.get_selected_file_paths(), gui_calling=True))
 
 class ManagedFileTreeWidget(file_tree.FileTreeWidget):
     MENUBAR = "/files_menubar"

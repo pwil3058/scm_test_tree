@@ -13,13 +13,17 @@
 ### along with this program; if not, write to the Free Software
 ### Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
 
+import os
+
+import gi
+gi.require_version("Gtk", "3.0")
+gi.require_version("Pango", "1.0")
+
+HOME = os.path.expanduser("~")
 APP_NAME = "scm_test_tree"
+CONFIG_DIR_PATH = os.sep.join([HOME, "." + APP_NAME + ".d"])
+
+if not os.path.exists(CONFIG_DIR_PATH):
+    os.mkdir(CONFIG_DIR_PATH, 0o775)
+
 ISSUES_URL = "<https://github.com/pwil3058/scm_test_tree/issues>"
-
-from . import i18n
-
-# temporary import of aipoed packages (to be rescinded) TODO
-from aipoed import enotify
-from aipoed import Result, CmdResult, ActionResult, Suggestion, CmdFailure
-from aipoed import os_utils
-

@@ -5,21 +5,25 @@ import gi
 gi.require_version("Gtk", "3.0")
 from gi.repository import Gtk
 
+from aipoed import enotify
+
+from aipoed.decorators import singleton
+from aipoed.gui import dialogue
+from aipoed.gui import actions
+
 from .. import config_data
 from .. import utils
 from .. import cmd_ifce
-from .. import enotify
 
 from . import ifce
 from . import config
-from . import dialogue
-from . import actions
 from . import ws_actions
 from . import recollect
 from . import icons
 from . import file_tree_managed
 
-class MainWindow(Gtk.Window, dialogue.BusyIndicator, actions.CAGandUIManager, enotify.Listener, ws_actions.WSListenerMixin):
+@singleton
+class MainWindow(dialogue.MainWindow, actions.CAGandUIManager, enotify.Listener, ws_actions.WSListenerMixin):
     UI_DESCR = \
         '''
         <ui>
@@ -38,16 +42,11 @@ class MainWindow(Gtk.Window, dialogue.BusyIndicator, actions.CAGandUIManager, en
             </menubar>
         </ui>
         '''
-    count = 0
     def __init__(self):
-        assert MainWindow.count == 0
-        MainWindow.count += 1
-        Gtk.Window.__init__(self, Gtk.WindowType.TOPLEVEL)
+        dialogue.MainWindow.__init__(self, Gtk.WindowType.TOPLEVEL)
         self.parse_geometry(recollect.get("main_window", "last_geometry"))
         self.set_icon_from_file(icons.APP_ICON_FILE)
-        dialogue.BusyIndicator.__init__(self)
         self.connect("destroy", self._quit)
-        dialogue.init(self)
         actions.CAGandUIManager.__init__(self)
         enotify.Listener.__init__(self)
         ws_actions.WSListenerMixin.__init__(self)
@@ -100,15 +99,15 @@ class MainWindow(Gtk.Window, dialogue.BusyIndicator, actions.CAGandUIManager, en
             if wspath:
                 with open_dialog.showing_busy():
                     result = ifce.chdir(wspath)
-                dialogue.report_any_problems(result)
+                self.report_any_problems(result)
         open_dialog.destroy()
     def _new_tgnd_acb(self, _action):
-        dirname = dialogue.ask_dir_path(_("{0}: Browse for Directory").format(config_data.APP_NAME), existing=True, parent=self)
+        dirname = self.ask_dir_path(_("{0}: Browse for Directory").format(config_data.APP_NAME), existing=True)
         if dirname:
             result = cmd_ifce.create_test_tree(dirname, gui_calling=True)
             if result.is_less_than_error:
                 ifce.chdir(dirname)
-            dialogue.report_any_problems(result)
+            self.report_any_problems(result)
     def _configure_event_cb(self, widget, event):
         recollect.set("main_window", "last_geometry", "{0.width}x{0.height}+{0.x}+{0.y}".format(event))
     def _paned_notify_cb(self, widget, parameter, oname=None):

@@ -21,9 +21,10 @@ import collections
 
 from gi.repository import Gtk
 
-from .. import enotify
+from aipoed import enotify
 
-from . import actions
+from aipoed.gui import actions
+
 from . import ifce
 
 AC_NOT_IN_TGND, AC_IN_TGND, AC_IN_TGND_MASK = actions.ActionCondns.new_flags_and_mask(2)

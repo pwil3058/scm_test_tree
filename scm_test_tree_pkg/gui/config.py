@@ -21,17 +21,18 @@ from gi.repository import GObject
 from gi.repository import Gtk
 from gi.repository import Gdk
 
+from aipoed.gui import gutils
+from aipoed.gui import tlview
+from aipoed.gui import table
+from aipoed.gui import dialogue
+from aipoed.gui import actions
+from aipoed.gui import apath
+
 from .. import config_data
 from .. import utils
 
-from . import dialogue
-from . import gutils
-from . import tlview
-from . import table
-from . import actions
 from . import ifce
 from . import icons
-from . import apath
 
 SAVED_TGND_FILE_NAME = os.sep.join([config_data.CONFIG_DIR_NAME, "testgrounds"])
 

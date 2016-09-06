@@ -13,8 +13,13 @@
 ### along with this program; if not, write to the Free Software
 ### Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
 
-'''
-Library functions that are ony of interest GUI programs
-'''
+import gi
+gi.require_version("Gtk", "3.0")
+gi.require_version("Pango", "1.0")
 
-from . import auto_update
+from .. import APP_NAME, CONFIG_DIR_PATH
+
+# make xtnl_edit global actions available from ui manager
+from aipoed.gui import xtnl_edit
+
+xtnl_edit.initialize(APP_NAME, CONFIG_DIR_PATH)

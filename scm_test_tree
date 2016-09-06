@@ -14,8 +14,6 @@
 ### along with this program; if not, write to the Free Software
 ### Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
 
-'''Command line interface for the darning patch management system'''
-
 import sys
 import argparse
 import collections
@@ -100,21 +98,25 @@ def gui_cmd(args):
     '''Execute the "gui" sub command using the supplied args'''
     import gi
     gi.require_version("Gtk", "3.0")
+    gi.require_version("Pango", "1.0")
     from gi.repository import Gtk
-    from scm_test_tree_pkg.gui import dialogue
+    from aipoed.gui import dialogue
     from scm_test_tree_pkg.gui import gui
     from scm_test_tree_pkg.gui import recollect
     from scm_test_tree_pkg.gui import ifce
     from scm_test_tree_pkg import config_data
+
+    result = ifce.init(recollect.get(config_data.APP_NAME, "last_pgnd"))
+    mw = gui.MainWindow()
+    mw.show()
+    mw.report_any_problems(result)
     try:
-        dialogue.report_any_problems(ifce.init(recollect.get(config_data.APP_NAME, "last_pgnd")))
-        gui.MainWindow().show()
         Gtk.main()
     except (SystemExit, KeyboardInterrupt):
         pass
-    #except Exception as edata:
-        #dialogue.report_exception_as_error(sys.exc_info())
-        #return 3
+    except Exception as edata:
+        mw.report_exception_as_error(sys.exc_info())
+        return 3
     finally:
         ifce.close()
     return 0
