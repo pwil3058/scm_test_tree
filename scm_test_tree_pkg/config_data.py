@@ -20,11 +20,7 @@ HOME = os.path.expanduser("~")
 
 from . import APP_NAME
 from . import ISSUES_URL
-
-CONFIG_DIR_NAME = os.sep.join([HOME, "." + APP_NAME + ".d"])
-
-if not os.path.exists(CONFIG_DIR_NAME):
-    os.mkdir(CONFIG_DIR_NAME, 0o775)
+from . import CONFIG_DIR_PATH
 
 def get_report_request_msg():
     return \

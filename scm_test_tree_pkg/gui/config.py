@@ -34,10 +34,10 @@ from .. import utils
 from . import ifce
 from . import icons
 
-SAVED_TGND_FILE_NAME = os.sep.join([config_data.CONFIG_DIR_NAME, "testgrounds"])
+SAVED_TGND_FILE_PATH = os.sep.join([config_data.CONFIG_DIR_PATH, "testgrounds"])
 
 class TGndPathView(apath.AliasPathView):
-    SAVED_FILE_NAME = SAVED_TGND_FILE_NAME
+    SAVED_FILE_NAME = SAVED_TGND_FILE_PATH
 
 class TGndPathTable(apath.AliasPathTable):
     VIEW = TGndPathView
