@@ -68,7 +68,6 @@ class ManagedFileTreeView(file_tree.FileTreeView, enotify.Listener, ws_actions.W
         enotify.Listener.__init__(self)
         ws_actions.WSListenerMixin.__init__(self)
     def populate_action_groups(self):
-        file_tree.FileTreeView.populate_action_groups(self)
         self.action_groups[ws_actions.AC_IN_TGND|actions.AC_SELN_MADE].add_actions(
             [
                 ("stt_modify_selected_files", Gtk.STOCK_EDIT, _('_Modify'), None,
