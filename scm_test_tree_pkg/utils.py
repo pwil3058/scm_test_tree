@@ -33,7 +33,7 @@ from gi.repository import GObject
 
 # TODO: purify utils (i.e. minimize . imports)
 
-from aipoed import CmdResult
+from .bab import CmdResult
 
 from .config_data import HOME
 
@@ -144,7 +144,7 @@ def get_file_contents(srcfile, decompress=True):
     decompression as indicated by filename's suffix.
     '''
     if decompress:
-        from aipoed import runext
+        from .bab import runext
         _root, ext = os.path.splitext(srcfile)
         res = 0
         if ext == '.gz':

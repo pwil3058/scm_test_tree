@@ -21,9 +21,9 @@ import collections
 
 from gi.repository import Gtk
 
-from aipoed import enotify
+from ..bab import enotify
 
-from aipoed.gui import actions
+from ..gtx import actions
 
 from . import ifce
 

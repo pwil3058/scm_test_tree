@@ -18,8 +18,3 @@ gi.require_version("Gtk", "3.0")
 gi.require_version("Pango", "1.0")
 
 from .. import APP_NAME, CONFIG_DIR_PATH
-
-# make xtnl_edit global actions available from ui manager
-from aipoed.gui import xtnl_edit
-
-xtnl_edit.initialize(APP_NAME, CONFIG_DIR_PATH)

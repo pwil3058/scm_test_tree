@@ -5,11 +5,11 @@ import gi
 gi.require_version("Gtk", "3.0")
 from gi.repository import Gtk
 
-from aipoed import enotify
+from ..bab import enotify
 
-from aipoed.decorators import singleton
-from aipoed.gui import dialogue
-from aipoed.gui import actions
+from ..bab.decorators import singleton
+from ..gtx import dialogue
+from ..gtx import actions
 
 from .. import config_data
 from .. import utils

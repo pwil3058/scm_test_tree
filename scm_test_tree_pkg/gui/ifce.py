@@ -18,10 +18,10 @@ import collections
 import os
 import datetime
 
-from aipoed import enotify
-from aipoed import CmdResult
+from ..bab import enotify
+from ..bab import CmdResult
 
-from aipoed.gui import terminal
+from ..gtx import terminal
 
 from ..config_data import APP_NAME
 
@@ -114,5 +114,5 @@ def check_interfaces(event_args):
         return enotify.E_CHANGE_WD # don't send ifce changes and wd change at the same time
     return 0
 
-from aipoed.gui import auto_update
+from ..gtx import auto_update
 auto_update.set_initialize_event_flags(check_interfaces)

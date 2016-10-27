@@ -24,7 +24,7 @@ try:
 except ImportError:
     import ConfigParser as configparser
 
-from aipoed import CmdResult
+from .bab import CmdResult
 
 from .config_data import APP_NAME, CONFIG_DIR_PATH
 

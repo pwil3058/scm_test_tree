@@ -1,0 +1,6 @@
+[submodule "scm_test_tree_pkg/gtx"]
+	path = scm_test_tree_pkg/gtx
+	url = git@github.com:pwil3058/pysm_gtx.git
+[submodule "scm_test_tree_pkg/bab"]
+	path = scm_test_tree_pkg/bab
+	url = git@github.com:pwil3058/pysm_bab.git
