@@ -21,6 +21,8 @@ from gi.repository import GObject
 from gi.repository import Gtk
 from gi.repository import Gdk
 
+from ..bab import utils
+
 from ..gtx import gutils
 from ..gtx import tlview
 from ..gtx import table
@@ -28,13 +30,12 @@ from ..gtx import dialogue
 from ..gtx import actions
 from ..gtx import apath
 
-from .. import config_data
-from .. import utils
+from .. import CONFIG_DIR_PATH
 
 from . import ifce
 from . import icons
 
-SAVED_TGND_FILE_PATH = os.sep.join([config_data.CONFIG_DIR_PATH, "testgrounds"])
+SAVED_TGND_FILE_PATH = os.sep.join([CONFIG_DIR_PATH, "testgrounds"])
 
 class TGndPathView(apath.AliasPathView):
     SAVED_FILE_NAME = SAVED_TGND_FILE_PATH

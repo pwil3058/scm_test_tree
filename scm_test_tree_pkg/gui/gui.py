@@ -6,21 +6,26 @@ gi.require_version("Gtk", "3.0")
 from gi.repository import Gtk
 
 from ..bab import enotify
+from ..bab import utils
 
 from ..bab.decorators import singleton
+
 from ..gtx import dialogue
 from ..gtx import actions
+from ..gtx import recollect
 
-from .. import config_data
-from .. import utils
+from .. import APP_NAME
+
 from .. import cmd_ifce
 
 from . import ifce
 from . import config
 from . import ws_actions
-from . import recollect
 from . import icons
 from . import file_tree_managed
+
+recollect.define("main_window", "last_geometry", recollect.Defn(str, ""))
+recollect.define("main_window", "vpaned_position", recollect.Defn(int, -1))
 
 @singleton
 class MainWindow(dialogue.MainWindow, actions.CAGandUIManager, enotify.Listener, ws_actions.WSListenerMixin):
@@ -66,6 +71,7 @@ class MainWindow(dialogue.MainWindow, actions.CAGandUIManager, enotify.Listener,
             vpaned.add1(self._file_tree_widget)
             vpaned.add2(ifce.TERM)
             vbox.pack_start(vpaned, expand=True, fill=True, padding=0)
+            vpaned.connect("notify", self._paned_notify_cb, "vpaned_position")
         else:
             vbox.pack_start(self._file_tree_widget, expand=True, fill=True, padding=0)
         self.connect("configure_event", self._configure_event_cb)
@@ -88,7 +94,7 @@ class MainWindow(dialogue.MainWindow, actions.CAGandUIManager, enotify.Listener,
     def _quit(self, _widget):
         Gtk.main_quit()
     def _update_title(self):
-        self.set_title(config_data.APP_NAME + ": {0}".format(utils.path_rel_home(os.getcwd())))
+        self.set_title(APP_NAME + ": {0}".format(utils.path_rel_home(os.getcwd())))
     def _reset_after_cd(self, *args, **kwargs):
         with self.showing_busy():
             self._update_title()
@@ -102,7 +108,7 @@ class MainWindow(dialogue.MainWindow, actions.CAGandUIManager, enotify.Listener,
                 self.report_any_problems(result)
         open_dialog.destroy()
     def _new_tgnd_acb(self, _action):
-        dirname = self.ask_dir_path(_("{0}: Browse for Directory").format(config_data.APP_NAME), existing=True)
+        dirname = self.ask_dir_path(_("{0}: Browse for Directory").format(APP_NAME), existing=True)
         if dirname:
             result = cmd_ifce.create_test_tree(dirname, gui_calling=True)
             if result.is_less_than_error:

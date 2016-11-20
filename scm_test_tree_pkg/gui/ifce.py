@@ -23,7 +23,7 @@ from ..bab import CmdResult
 
 from ..gtx import terminal
 
-from ..config_data import APP_NAME
+from .. import APP_NAME
 
 from . import recollect
 
@@ -97,7 +97,7 @@ def chdir(newdir=None):
     else:
         in_valid_test_gnd = False
     curdir = os.getcwd()
-    if not utils.samefile(curdir, CURDIR):
+    if not os.path.samefile(curdir, CURDIR):
         if TERM:
             TERM.set_cwd(curdir)
     CURDIR = curdir
@@ -108,7 +108,7 @@ def check_interfaces(event_args):
     from .. import utils
     global CURDIR
     curdir = os.getcwd()
-    if not utils.samefile(CURDIR, curdir):
+    if not os.path.samefile(CURDIR, curdir):
         event_args["new_wd"] = curdir
         CURDIR = curdir
         return enotify.E_CHANGE_WD # don't send ifce changes and wd change at the same time

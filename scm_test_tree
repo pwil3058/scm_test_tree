@@ -100,13 +100,13 @@ def gui_cmd(args):
     gi.require_version("Gtk", "3.0")
     gi.require_version("Pango", "1.0")
     from gi.repository import Gtk
+    from scm_test_tree_pkg import APP_NAME
     from scm_test_tree_pkg.gtx import dialogue
     from scm_test_tree_pkg.gui import gui
     from scm_test_tree_pkg.gui import recollect
     from scm_test_tree_pkg.gui import ifce
-    from scm_test_tree_pkg import config_data
 
-    result = ifce.init(recollect.get(config_data.APP_NAME, "last_pgnd"))
+    result = ifce.init(recollect.get(APP_NAME, "last_pgnd"))
     mw = gui.MainWindow()
     mw.show()
     mw.report_any_problems(result)

@@ -25,6 +25,7 @@ import os
 HOME = os.path.expanduser("~")
 APP_NAME = "scm_test_tree"
 CONFIG_DIR_PATH = os.sep.join([HOME, "." + APP_NAME + ".d"])
+PGND_CONFIG_DIR_PATH = None
 
 if not os.path.exists(CONFIG_DIR_PATH):
     os.mkdir(CONFIG_DIR_PATH, 0o775)
@@ -32,4 +33,3 @@ if not os.path.exists(CONFIG_DIR_PATH):
 ISSUES_URL = "<https://github.com/pwil3058/scm_test_tree/issues>"
 ISSUES_EMAIL = __author__
 ISSUES_VERSION = __version__
-

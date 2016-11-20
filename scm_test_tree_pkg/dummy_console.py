@@ -15,7 +15,7 @@
 
 # A dummy console facilitate code sharing in othe modules
 
-from ..utils import singleton
+from .bab.decorators import singleton
 
 @singleton
 class ConsoleLogWidget(object):
